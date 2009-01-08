@@ -13,9 +13,16 @@ require "lib/parsers.rb"
 class Columbawawi < SMS::App
 	
 	Messages = {
-		:missing_uid => "Please provide a child ID",
-		:invalid_uid => "Please provide a valid child ID (6 numbers)"
-	}	
+		:dont_understand => "Sorry, I don't understand.",
+		
+		:missing_uid => "Please provide a child ID.",
+		:invalid_uid => "Please provide a valid child ID (6 numbers).",
+		:already_uid => "Sorry, that child ID has already been registered.",
+		
+		:help_new    => "To register a child, reply:\nnew child [id] [age] [gender] [contact] [village]",
+		:help_report =>  "To report on a child's progress:\nreport [id] [weight] [height] [ratio] [muac]",
+	}
+	
 	
 	def initialize
 		@reg = RegistrationParser.new
@@ -51,13 +58,13 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(msg)
-			#respond "parse_error"
-			respond "Sorry, I don't understand. Try: NEW [ID] [AGE] [GENDER] [CONTACT]"
+			respond :dont_understand, " ", :help_new
 		end
 		
 		# debug messages
 		log "Parsed into: #{data.inspect}", :info
-		log "Unparsed: #{@reg.unparsed.inspect}", :info
+		log "Unparsed: #{@reg.unparsed.inspect}", :info\
+			unless @reg.unparsed.empty?
 		
 		# check that the child UID was
 		# provided and valid (may abort)
@@ -66,8 +73,7 @@ class Columbawawi < SMS::App
 		# check that this child UID
 		# hasn't already been registered
 		if c = Child.get(data[:uid])
-			#respond "uid_already_exists"
-			respond "Sorry, that child ID has already been registered"
+			respond :already_uid
 		end
 		
 		# create the new child in db
@@ -79,7 +85,7 @@ class Columbawawi < SMS::App
 		# parsed, as flat key=value pairs
 		summary = (@reg.matches.collect do |m|
 			unless m.token.name == :uid
-				"#{m.token.name}=#{m.value}"
+				"#{m.token.name}=#{m.humanize}"
 			end
 		end).compact.join(", ")
 		
@@ -90,14 +96,13 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\A(?:report\s*on|report)(.+)\Z/
+	serve /\A(?:report\s*on|report|rep|r)(.+)\Z/
 	def report(from, dt, msg)
 		
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @rep.parse(msg)
-			#respond "parse_error"
-			respond "Sorry, I don't understand. Try: REPORT [ID] [WEIGHT] [HEIGHT] [RATIO] [MUAC]"
+			respond :dont_understand, " ", :help_report
 		end
 		
 		# debug message
@@ -150,11 +155,16 @@ class Columbawawi < SMS::App
 	end
 	
 	
+	serve /help/
+	def help(from, dt)
+		respond :help_new, "\n---\n", :help_report
+	end
+	
+	
 	serve :anything
 	def anything_else(from, dt, msg)
-		respond "I don't understand"
+		respond :dont_understand
 	end
 end
-
 
 SMS::serve_forever(:Drb)

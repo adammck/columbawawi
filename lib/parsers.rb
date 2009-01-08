@@ -11,6 +11,15 @@ class UID < Fuzz::Token::Base
 	Pattern = '(?:child\s*)?(?:u?id\s*)?(\d{1,10})\s*[:;\.]?'
 end
 
+class Village < Fuzz::Token::Base
+	Pattern = '(?:from|of)?([a-z]+)'
+	
+	# because it's very loose, the village
+	# name must come at the end of the msg
+	Options = {
+		:last => true }
+end
+
 
 class RegistrationParser < Fuzz::Parser
 	def initialize
@@ -20,9 +29,9 @@ class RegistrationParser < Fuzz::Parser
 		# of the model fields for Child
 		add_token "UID", UID
 		add_token "Gender", :gender
-		add_token "Age", :age
+		add_token "Age", :age, { :default_unit => :month, :humanize_unit => :month }
 		add_token "Contact", :phone
-		add_token "Village", :letters, { :last => true }
+		add_token "Village", Village
 	end
 end
 
