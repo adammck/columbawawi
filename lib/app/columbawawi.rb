@@ -2,12 +2,14 @@
 # vim: noet
 
 
-# import libraries - no gems yet
-require "../rubysms/smsapp.rb"
-require "lib/models.rb"
-require "lib/parsers.rb"
+# import local dependancies
+here = File.dirname(__FILE__)
+require "#{here}/../models.rb"
+require "#{here}/../parsers.rb"
 
-
+# import rubysms, which does
+# is not a ruby gem yet :(
+require "#{here}/../../../rubysms/smsapp.rb"
 
 
 class Columbawawi < SMS::App
@@ -166,5 +168,3 @@ class Columbawawi < SMS::App
 		respond :dont_understand
 	end
 end
-
-SMS::serve_forever(:Drb)
