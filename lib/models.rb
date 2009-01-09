@@ -32,6 +32,3 @@ class Report
 	property :muac, Integer
 	#belongs_to :child
 end
-
-# create a blank database
-#DataMapper.auto_migrate!
