@@ -123,12 +123,12 @@ class Columbawawi < SMS::App
 			respond "Sorry, that child ID has not been registered yet"
 		end
 		
+
 		#sdata[:child_id] = c.id
 		#puts data.inspect
-		# creaate the Report obeject in db
+		# creaate the Report object in db
 		r = Report.create(data)
 		r.save
-		
 		
 		
 		# build a string summary containing all
@@ -142,7 +142,7 @@ class Columbawawi < SMS::App
 		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
-		suffix = (summary != "") ? ": #{summary}" : ""
+		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}" : ""
 		respond "Thank you for reporting on Child #{data[:uid]}#{suffix}"
 	end
 	

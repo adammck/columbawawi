@@ -6,7 +6,7 @@ require "rubygems"
 require "dm-core"
 require "dm-types"
 
-# cofigure the dev database
+# configure the dev database
 db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
 DataMapper.setup(:default, "sqlite3:///#{db_dir}/dev.db")
 
@@ -28,7 +28,11 @@ class Report
 	property :uid, String
 	property :weight, Integer
 	property :height, Integer
-	property :ratio, Float
 	property :muac, Integer
 	#belongs_to :child
+
+	def ratio
+		(attribute_get(:height)).to_f/(attribute_get(:weight)).to_f
+	end
+
 end
