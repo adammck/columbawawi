@@ -9,7 +9,7 @@ require "#{here}/../lib/app/columbawawi.rb"
 
 if ARGV.length > 0
 	ARGV.each do |arg|
-		SMS::add_backend arg
+		SMS::add_backend arg.downcase.to_sym
 	end
 
 else
