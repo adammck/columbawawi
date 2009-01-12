@@ -44,7 +44,6 @@ class ReportParser < Fuzz::Parser
 		add_token "UID", UID
 		add_token "Weight", :weight
 		add_token "Height", :height
-		add_token "Ratio", :ratio
 		add_token "MUAC", :length
 	end
 end
