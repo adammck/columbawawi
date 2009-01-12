@@ -4,18 +4,15 @@
 here = File.dirname(__FILE__)
 require "#{here}/../lib/app/columbawawi.rb"
 
-# use the argument(s) as the sms
-# backend(s), or default to gsm
+# load the appropriate conf, based
+# on arguments (or default to dev
+conf = (ARGV.length > 0) ? ARGV[0] : "dev"
+require "#{here}/../conf/#{conf}.rb"
 
-if ARGV.length > 0
-	ARGV.each do |arg|
-		SMS::add_backend arg.downcase.to_sym
-	end
-
-else
-	# default to a single
-	# rubygsm backend
-	SMS::add_backend :gsm	
+# at the moment, only the backends
+# are configurable. more to come!
+$conf[:backends].each_value do |be|
+	SMS::add_backend *be
 end
 
 SMS::serve
