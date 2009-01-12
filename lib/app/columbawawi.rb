@@ -9,7 +9,7 @@ require "#{here}/../parsers.rb"
 
 # import rubysms, which does
 # is not a ruby gem yet :(
-require "#{here}/../../../rubysms/smsapp.rb"
+require "#{here}/../../../rubysms/lib/sms.rb"
 
 
 class Columbawawi < SMS::App
