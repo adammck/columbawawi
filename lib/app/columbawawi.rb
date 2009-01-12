@@ -68,7 +68,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str)
-			msg.respond assemble(:dont_understand, " ", :help_new)
+			return msg.respond assemble(:dont_understand, " ", :help_new)
 		end
 		
 		# debug messages
@@ -79,13 +79,13 @@ class Columbawawi < SMS::App
 		# check that the child UID was
 		# provided and valid (may abort)
 		err = check_uid(@reg)
-		msg.respond assemble(err)\
+		return msg.respond assemble(err)\
 			unless err.nil?
 		
 		# check that this child UID
 		# hasn't already been registered
 		if c = Child.get(data[:uid])
-			msg.respond assemble(:already_uid)
+			return msg.respond assemble(:already_uid)
 		end
 		
 		# create the new child in db
@@ -114,7 +114,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @rep.parse(str)
-			msg.respond assemble(:dont_understand, " ", :help_report)
+			return msg.respond assemble(:dont_understand, " ", :help_report)
 		end
 		
 		# debug message
@@ -125,14 +125,14 @@ class Columbawawi < SMS::App
 		# check that the child UID was
 		# provided and valid (may abort)
 		err = check_uid(@rep)
-		msg.respond assemble(err)\
+		return msg.respond assemble(err)\
 			unless err.nil?
 		
 		# fetch the child, and abort if
 		# none could be found by the UID
 		#uid = data.delete(:uid)
 		unless c = Child.get(data[:uid])
-			msg.respond assemble(:notyet_uid)
+			return msg.respond assemble(:notyet_uid)
 		end
 		
 		#sdata[:child_id] = c.id
