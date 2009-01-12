@@ -34,7 +34,7 @@ class Report
 	#belongs_to :child
 
 	def ratio
-		attribute_get(:height)/attribute_get(:weight)
+		sprintf("%.2f", attribute_get(:height)/attribute_get(:weight)).to_f
 	end
 
 	def moderate?
