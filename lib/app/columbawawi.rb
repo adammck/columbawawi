@@ -17,13 +17,13 @@ class Columbawawi < SMS::App
 	Messages = {
 		:dont_understand => "Sorry, I don't understand.",
 		
-		:missing_uid => "Please provide a child ID.",
-		:invalid_uid => "Please provide a valid child ID (6 numbers).",
-		:notyet_uid  => "Sorry, that child ID has not been registerd yet.",
-		:already_uid => "Sorry, that child ID has already been registered.",
+		:missing_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
+		:invalid_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
+		:notyet_uid  => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
+		:already_uid => "Oops, I already have a child with that child#.",
 		
-		:help_new    => "To register a child, reply:\nnew [id] [age] [gender] [contact] [village]",
-		:help_report =>  "To report on a child's progress:\nreport [id] [weight] [height] [muac] [oedema] [diarrhea]",
+		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact] [village]",
+		:help_report =>  "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 
 		:mal_mod     => " is moderately malnourished. Please refer to Supplementary Feeding Programme (SFP) and counsel caregiver on child nutrition.",
 		:mal_sev     => " has severe acute malnutrition. Please refer child to the NRU/ TFP.  Administer 50 ml of 10% sugar to child immediately to prevent hypoglycaemia and explain to caregiver the reason for admission and centre procedures.",
