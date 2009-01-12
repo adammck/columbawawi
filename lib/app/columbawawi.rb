@@ -22,8 +22,8 @@ class Columbawawi < SMS::App
 		:notyet_uid  => "Sorry, that child ID has not been registerd yet.",
 		:already_uid => "Sorry, that child ID has already been registered.",
 		
-		:help_new    => "To register a child, reply:\nnew child [id] [age] [gender] [contact] [village]",
-		:help_report =>  "To report on a child's progress:\nreport [id] [weight] [height] [ratio] [muac]",
+		:help_new    => "To register a child, reply:\nnew [id] [age] [gender] [contact] [village]",
+		:help_report =>  "To report on a child's progress:\nreport [id] [weight] [height] [muac] [oedema] [diarrhea]",
 
 		:mal_mod     => " is moderately malnourished. Please refer to Supplementary Feeding Programme (SFP) and counsel caregiver on child nutrition.",
 		:mal_sev     => " has severe acute malnutrition. Please refer child to the NRU/ TFP.  Administer 50 ml of 10% sugar to child immediately to prevent hypoglycaemia and explain to caregiver the reason for admission and centre procedures.",
