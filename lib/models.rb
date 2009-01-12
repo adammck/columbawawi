@@ -26,13 +26,15 @@ class Report
 	include DataMapper::Resource
 	property :id, Integer, :serial=>true
 	property :uid, String
-	property :weight, Integer
-	property :height, Integer
-	property :muac, Integer
+	property :weight, Float 
+	property :height, Float 
+	property :muac, Float
+	property :oedema, Boolean, :default => false
+	property :diarrhea, Boolean
 	#belongs_to :child
 
 	def ratio
-		(attribute_get(:height)).to_f/(attribute_get(:weight)).to_f
+		sprintf("%.2f", attribute_get(:height)/attribute_get(:weight)).to_f
 	end
 
 	def moderate?
@@ -54,6 +56,9 @@ class Report
 			return true
 		end
 		if(attribute_get(:muac) < 11.0)
+			return true
+		end
+		if(attribute_get(:oedema))
 			return true
 		end
 		return false

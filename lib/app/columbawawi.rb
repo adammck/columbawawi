@@ -46,13 +46,6 @@ class Columbawawi < SMS::App
 			return :missing_uid
 		end
 		
-		# check that the UID was exactly
-		# six digits long here (rather than
-		# rejecting it at parse-time) so we
-		# can respond with a useful error
-		unless parser[:uid].length == 6
-			return :invalid_uid
-		end
 		
 		# no errors
 		# to report

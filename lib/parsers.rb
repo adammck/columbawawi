@@ -8,7 +8,12 @@ require "#{projects}/fuzz/lib/fuzz.rb"
 
 # custom fuzz tokens
 class UID < Fuzz::Token::Base
-	Pattern = '(?:child\s*)?(?:u?id\s*)?(\d{1,10})\s*[:;\.]?'
+	Pattern = '(\d{4})' + '(?:' + Fuzz::Delimiter + ')' + '(\d{1,2})'
+
+	def normalize(gmc_str, child_str)
+		child_str.length == 1 ? (child = '0' + child_str) : (child = child_str)
+		(gmc_str + child).to_i
+	end
 end
 
 class Village < Fuzz::Token::Base
@@ -31,9 +36,10 @@ class RegistrationParser < Fuzz::Parser
 		add_token "Gender", :gender
 		add_token "Age", :age, { :default_unit => :month, :humanize_unit => :month }
 		add_token "Contact", :phone
-		add_token "Village", Village
+		#add_token "Village", Village
 	end
 end
+
 
 class ReportParser < Fuzz::Parser
 	def initialize
@@ -45,5 +51,7 @@ class ReportParser < Fuzz::Parser
 		add_token "Weight", :weight
 		add_token "Height", :height
 		add_token "MUAC", :length
+		add_token "Oedema", :boolean
+		add_token "Diarrhea", :boolean
 	end
 end
