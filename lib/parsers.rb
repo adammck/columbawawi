@@ -8,7 +8,12 @@ require "#{projects}/fuzz/lib/fuzz.rb"
 
 # custom fuzz tokens
 class UID < Fuzz::Token::Base
-	Pattern = '(?:child\s*)?(?:u?id\s*)?(\d{1,10})\s*[:;\.]?'
+	Pattern = '(\d{4})' + '(?:' + Fuzz::Delimiter + ')' + '(\d{1,2})'
+
+	def normalize(gmc_str, child_str)
+		child_str.length == 1 ? (child = '0' + child_str) : (child = child_str)
+		(gmc_str + child).to_i
+	end
 end
 
 class Village < Fuzz::Token::Base
