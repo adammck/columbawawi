@@ -146,11 +146,12 @@ class Columbawawi < SMS::App
 		# verify receipt of this registration,
 		# including all tokens that we parsed
 		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}." : ""
-		advice = ""
 		if(r.severe?)
-			advice << " Child #{data[:uid]} #{Messages[:mal_sev]}"
+			advice = " Child #{data[:uid]} #{Messages[:mal_sev]}"
 		elsif(r.moderate?)
-			advice << " Child #{data[:uid]} #{Messages[:mal_mod]}"
+			advice = " Child #{data[:uid]} #{Messages[:mal_mod]}"
+		else
+			advice = ""
 		end
 		respond "Thank you for reporting on Child #{data[:uid]}#{suffix}#{advice}"
 	end
