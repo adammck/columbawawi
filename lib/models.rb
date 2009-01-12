@@ -35,4 +35,31 @@ class Report
 		(attribute_get(:height)).to_f/(attribute_get(:weight)).to_f
 	end
 
+	def moderate?
+		if(ratio < 0.79)
+			if(ratio >= 0.70)
+				return true
+			end
+		end
+		if(attribute_get(:muac) < 11.9)
+			if(attribute_get(:muac) >= 11.0)
+				return true
+			end
+		end
+		return false
+	end
+
+	def severe?
+		if(ratio < 0.79)
+			if(ratio < 0.70)
+				return true
+			end
+		end
+		if(attribute_get(:muac) < 11.9)
+			if(attribute_get(:muac) < 11.0)
+				return true
+			end
+		end
+		return false
+	end
 end

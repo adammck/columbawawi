@@ -23,6 +23,9 @@ class Columbawawi < SMS::App
 		
 		:help_new    => "To register a child, reply:\nnew child [id] [age] [gender] [contact] [village]",
 		:help_report =>  "To report on a child's progress:\nreport [id] [weight] [height] [ratio] [muac]",
+
+		:mal_mod     => " is moderately malnourished. Please refer to Supplementary Feeding Programme (SFP) and counsel caregiver on child nutrition.",
+		:mal_sev     => " has severe acute malnutrition. Please refer child to the NRU/ TFP.  Administer 50 ml of 10% sugar to child immediately to prevent hypoglycaemia and explain to caregiver the reason for admission and centre procedures.",
 	}
 	
 	
@@ -142,10 +145,16 @@ class Columbawawi < SMS::App
 		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
-		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}" : ""
-		respond "Thank you for reporting on Child #{data[:uid]}#{suffix}"
+		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}." : ""
+		advice = ""
+		if(r.severe?)
+			advice << " Child #{data[:uid]} #{Messages[:mal_sev]}"
+		elsif(r.moderate?)
+			advice << " Child #{data[:uid]} #{Messages[:mal_mod]}"
+		end
+		respond "Thank you for reporting on Child #{data[:uid]}#{suffix}#{advice}"
 	end
-	
+
 	
 	serve /\Achildren\Z/
 	def children(from, dt)
