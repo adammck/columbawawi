@@ -31,9 +31,10 @@ class RegistrationParser < Fuzz::Parser
 		add_token "Gender", :gender
 		add_token "Age", :age, { :default_unit => :month, :humanize_unit => :month }
 		add_token "Contact", :phone
-		add_token "Village", Village
+		#add_token "Village", Village
 	end
 end
+
 
 class ReportParser < Fuzz::Parser
 	def initialize
@@ -45,5 +46,7 @@ class ReportParser < Fuzz::Parser
 		add_token "Weight", :weight
 		add_token "Height", :height
 		add_token "MUAC", :length
+		add_token "Oedema", :boolean
+		add_token "Diarrhea", :boolean
 	end
 end
