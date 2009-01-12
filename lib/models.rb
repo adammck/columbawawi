@@ -16,7 +16,7 @@ class Child
 	property :uid, String, :key=>true, :format=>/^\d{6}$/, :messages => {
 		:format => "Child UID must be exactly six digits" }
 	
-	property :age, Integer
+	property :age, DateTime
 	property :gender, Enum[:male, :female]
 	property :contact, String, :length=>22
 	property :village, String, :length=>200
