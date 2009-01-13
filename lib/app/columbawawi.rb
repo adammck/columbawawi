@@ -25,8 +25,8 @@ class Columbawawi < SMS::App
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact] [village]",
 		:help_report =>  "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 
-		:mal_mod     => " is moderately malnourished. Please refer to Supplementary Feeding Programme (SFP) and counsel caregiver on child nutrition.",
-		:mal_sev     => " has severe acute malnutrition. Please refer child to the NRU/ TFP.  Administer 50 ml of 10% sugar to child immediately to prevent hypoglycaemia and explain to caregiver the reason for admission and centre procedures.",
+		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
+		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
 	}
 	
 	
