@@ -146,14 +146,17 @@ class Columbawawi < SMS::App
 		# verify receipt of this registration,
 		# including all tokens that we parsed
 		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}." : ""
-		if(r.severe?)
-			advice = " Child #{data[:uid]} #{Messages[:mal_sev]}"
-		elsif(r.moderate?)
-			advice = " Child #{data[:uid]} #{Messages[:mal_mod]}"
-		else
-			advice = ""
+		msg.respond "Thank you for reporting on Child #{data[:uid]}#{suffix}"
+		
+		# send advice to the sender if the
+		# child appears to be severely or
+		# moderately malnourished
+		if r.severe?
+			msg.respond assemble("Child #{data[:uid]}", :mal_sev)
+			
+		elsif r.moderate?
+			msg.respond assemble("Child #{data[:uid]}", :mal_mod)
 		end
-		msg.respond "Thank you for reporting on Child #{data[:uid]}#{suffix}#{advice}"
 	end
 
 	
