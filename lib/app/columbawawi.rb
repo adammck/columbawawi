@@ -55,7 +55,7 @@ class Columbawawi < SMS::App
 	
 	public
 	
-	serve /\A(?:new\s*child|new|reg|register)(.+)\Z/
+	serve /\A(?:new\s*child|new|reg|register)(.+)\Z/i
 	def register(msg, str)
 	
 		# parse the message, and reject
@@ -101,7 +101,7 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\A(?:report\s*on|report|rep|r)(.+)\Z/
+	serve /\A(?:report\s*on|report|rep|r)(.+)\Z/i
 	def report(msg, str)
 		
 		# parse the message, and reject
