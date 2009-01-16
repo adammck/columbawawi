@@ -23,6 +23,7 @@ class UID < Fuzz::Token::Base
 		# fetch the Gmc object, so we can include its
 		# string title in the output. can't do this
 		# for child, because it may not exist yet
+		# TODO 'at' should be a message before this thing is i18n-ed
 		gmc = Gmc.first(:uid => g)
 		"#{c} at #{gmc.title}"
 	end
