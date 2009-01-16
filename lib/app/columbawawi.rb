@@ -327,8 +327,8 @@ class Columbawawi < SMS::App
 		end
 
 		# try to find the child's most recent report and destroy it
-		if(report = child.reports.first(:order => [:sent.desc]))
-			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y for ")
+		if(report = child.reports.first(:order => [:date.desc]))
+			latest = report.date.strftime("%I:%M%p on %m/%d/%Y for ")
 			report.destroy
 			return msg.respond assemble(:canceled_report,"#{latest}", :child ,"#{@can[:uid].humanize}", :canceled)
 
