@@ -90,12 +90,12 @@ class Report
 	property :oedema, Boolean
 	property :diarrhea, Boolean
 	property :date, DateTime
-	#issue flag
-
+	# TODO issue flag
 	
 	# Returns the weight to height ratio of
 	# this report, or nil, if either fields
 	# are missing.
+	# TODO calculate this properly
 	def ratio
 		w = attribute_get(:weight)
 		h = attribute_get(:height)
