@@ -34,13 +34,6 @@ class SMS::App
 	end
 end
 
-# disable screen logging
-module SMS
-	def self.log(*args)
-		nil
-	end
-end
-
 # monkeypatch the outgoing sms handler,
 # to prevent messages from really being
 # sent. instead, throw them to be caught
@@ -48,6 +41,13 @@ end
 class SMS::Outgoing
 	def send!
 		throw :sent_sms, text
+	end
+end
+
+# disable screen logging
+module SMS
+	def self.log(*args)
+		nil
 	end
 end
 
@@ -67,6 +67,12 @@ describe Columbawawi do
 		end
 	end
 	
+	it "provides help" do
+		r = Columbawawi.test("help")
+		r.should =~ /register/
+		r.should =~ /report/
+	end
+	
 	describe "(registration)" do
 		it "accepts the cheat-sheet example" do
 			Columbawawi.test("new 1234 70 M 21 09555123").should =~ /thank you for registering/i
@@ -79,9 +85,9 @@ describe Columbawawi do
 			
 			# age might be a few days off, but it
 			# should be at least year/month accurate!
-			x21_months_ago = Chronic.parse("21 months ago")
-			c.age.year == x21_months_ago.year
-			c.age.month == x21_months_ago.month
+			months_ago = Chronic.parse("21 months ago")
+			c.age.year == months_ago.year
+			c.age.month == months_ago.month
 		end
 	end
 	
