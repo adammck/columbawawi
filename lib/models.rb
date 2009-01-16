@@ -13,25 +13,29 @@ DataMapper.setup(:default, "sqlite3:///#{db_dir}/dev.db")
 
 class District
 	include DataMapper::Resource
+	has n, :gmcs
+	
 	property :id, Integer, :serial=>true
-	property :title, String
+	property :title, String, :length => 60
 end
 
 class Gmc
 	include DataMapper::Resource
 	belongs_to :district
+	has n, :children
 	
 	property :id, Integer, :serial=>true
 	property :uid, String, :key=>true, :format=>/^\d{4}$/, :messages => {
-		:format => "GMC UID must be exactly six digits" }
+		:format => "GMC UID must be exactly four digits" }
 	
-	property :title, String
+	property :title, String, :length => 60
 end
 
 class Child
 	include DataMapper::Resource
 	belongs_to :gmc
-
+	has n, :reports
+	
 	property :id, Integer, :serial=>true
 	property :uid, String, :key=>true, :format=>/^\d{2}$/, :messages => {
 		:format => "Child ID must be exactly two digits" }
@@ -39,7 +43,6 @@ class Child
 	property :age, DateTime
 	property :gender, Enum[:male, :female]
 	property :contact, String, :length=>22
-	property :village, String, :length=>200
 end
 
 class Report
