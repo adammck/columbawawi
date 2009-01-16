@@ -17,18 +17,15 @@ class Columbawawi < SMS::App
 	Messages = {
 		:dont_understand => "Sorry, I don't understand.",
 		
-		:missing_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
-		:invalid_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
-		
 		:invalid_gmc     => "Sorry, that GMC# is not valid.",
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
-		:ask_replacement => "This child is already registered. If you wish to replace them, please reply: REPLACE",
+		:ask_replacement => "This child is already registered.",
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
-		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP. Administer 50 ml of 10% sugar immediately.",
+		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10% sugar immediately.",
 	}
 	
 	
@@ -37,24 +34,6 @@ class Columbawawi < SMS::App
 		@rep = ReportParser.new
 	end
 	
-	
-	private
-	
-	def check_uid(parser, uid=nil)
-		
-		# the child UID is the only required
-		# field, so reject if it is missing
-		unless parser[:uid]
-			return :missing_uid
-		end
-		
-		# no errors
-		# to report
-		nil
-	end
-	
-	
-	public
 	
 	serve /\A(?:new\s*child|new|n|reg|register)(?:\s+(.+))?\Z/i
 	def register(msg, str)
@@ -70,6 +49,7 @@ class Columbawawi < SMS::App
 		log "Unparsed: #{@reg.unparsed.inspect}", :info\
 			unless @reg.unparsed.empty?
 		
+		# split the UIDs back into gmc+child
 		gmc_uid, child_uid = *data.delete(:uid)
 		
 		# fetch the gmc object; abort if it wasn't valid
@@ -77,10 +57,11 @@ class Columbawawi < SMS::App
 			return msg.respond assemble(:invalid_gmc)
 		end
 		
-		# check that this child UID hasn't
-		# already been registered at this GMC
-		unless gmc.children.all(:uid => child_uid).empty?
-			return msg.respond assemble(:already_uid)
+		# if this child has already been registered, then there
+		# is trouble afoot. we must ask what has happened, and
+		# wait for a response
+		if gmc.children.first(:uid => child_uid)
+			return msg.respond assemble(:ask_replacement)
 		end
 		
 		# create the new child in db
@@ -174,16 +155,6 @@ class Columbawawi < SMS::App
 		elsif r.moderate?
 			msg.respond assemble("Child #{@rep[:uid].humanize}", :mal_mod)
 		end
-	end
-
-	
-	serve /\Achildren\Z/
-	def children(msg)
-		summary = Child.all.collect do |child|
-			child.uid
-		end.compact.join(", ")
-		
-		msg.respond "Registered Children: #{summary}"
 	end
 	
 	
