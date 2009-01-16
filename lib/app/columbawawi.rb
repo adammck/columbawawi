@@ -16,6 +16,8 @@ class Columbawawi < SMS::App
 	
 	Messages = {
 		:dont_understand => "Sorry, I don't understand.",
+		:oops => "Oops! ",
+		:child => "Child ",
 		
 		:missing_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
 		:invalid_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
@@ -24,10 +26,12 @@ class Columbawawi < SMS::App
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		:ask_replacement => "This child is already registered. If you wish to replace them, please reply: REPLACE",
 		
-		:help_new    => "Oops, to register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
-		:help_report => "Oops, to report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
-		:help_cancel => "Oops, to cancel a child's most recent report:\ncancel [gmc#] [child#]",
+		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
+		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
+		:help_cancel => "To cancel a new chld or a child's most recent report:\ncancel [gmc#] [child#]",
 
+		:thanks_new => "Thank you for registering Child ",
+		:thanks_report => "Thank you for reporting on Child ",
 		:canceled => " has been canceled.",
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
@@ -132,7 +136,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str.to_s)
-			return msg.respond assemble(:help_new)
+			return msg.respond assemble(:oops, :help_new)
 		end
 		
 		# debug messages
@@ -172,7 +176,7 @@ class Columbawawi < SMS::App
 		# verify receipt of this registration,
 		# including all tokens that we parsed
 		suffix = (summary != "") ? ": #{summary}" : ""
-		msg.respond "Thank you for registering Child #{@reg[:uid].humanize}#{suffix}"
+		msg.respond assemble(:thanks_new, "#{@reg[:uid].humanize}#{suffix}")
 	end
 	
 	
@@ -182,7 +186,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @rep.parse(str)
-			return msg.respond assemble(:help_report)
+			return msg.respond assemble(:oops, :help_report)
 		end
 		
 		# debug message
@@ -234,16 +238,16 @@ class Columbawawi < SMS::App
 		# and the w/h ratio, if available
 		suffix = (summary != "") ? ": #{summary}" : ""
 		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
-		msg.respond "Thank you for reporting on Child #{@rep[:uid].humanize}#{suffix}"
+		msg.respond assemble(:thanks_report, "#{@rep[:uid].humanize}#{suffix}")
 		
 		# send advice to the sender if the
 		# child appears to be severely or
 		# moderately malnourished
 		if r.severe?
-			msg.respond assemble("Child #{@rep[:uid].humanize}", :mal_sev)
+			msg.respond assemble(:child, "#{@rep[:uid].humanize}", :mal_sev)
 			
 		elsif r.moderate?
-			msg.respond assemble("Child #{@rep[:uid].humanize}", :mal_mod)
+			msg.respond assemble(:child, "#{@rep[:uid].humanize}", :mal_mod)
 		end
 		
 		# send alerts if data seems unreasonable
@@ -251,7 +255,7 @@ class Columbawawi < SMS::App
 		alerts = issues(child)
 		if(alerts)
 			alerts.each do |alert|
-				msg.respond assemble("Child #{@rep[:uid].humanize}", alert)
+				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
 			end
 		end
 	end
@@ -261,7 +265,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @can.parse(str.to_s)
-			return msg.respond assemble(:help_cancel)
+			return msg.respond assemble(:oops, :help_cancel)
 		end
 		
 		# debug message
@@ -282,13 +286,16 @@ class Columbawawi < SMS::App
 			return msg.respond assemble(:invalid_child)
 		end
 
+		# try to find the child's most recent report and destroy it
 		if(report = child.reports.first(:order => [:sent.desc]))
 			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y")
 			report.destroy
-			return msg.respond assemble("Report sent at #{latest} for Child #{@can[:uid].humanize}", :canceled)
+			return msg.respond assemble("Report sent at #{latest} for ", :child ,"#{@can[:uid].humanize}", :canceled)
+
+		# otherwise destroy the child
 		else
 			child.destroy
-			return msg.respond assemble("New Child #{@can[:uid].humanize}", :canceled)
+			return msg.respond assemble("New ", :child ,"#{@can[:uid].humanize}", :canceled)
 		end
 
 	end
