@@ -62,13 +62,14 @@ class Report
 	
 	property :sent, DateTime
 	property :received, DateTime
-	#issue flag
+	# TODO issue flag
 	belongs_to :child
 
 	
 	# Returns the weight to height ratio of
 	# this report, or nil, if either fields
 	# are missing.
+	# TODO calculate this properly
 	def ratio
 		w = attribute_get(:weight)
 		h = attribute_get(:height)
