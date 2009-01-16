@@ -26,7 +26,7 @@ class Columbawawi < SMS::App
 		:oops => "Oops! ",
 		:child => "Child ",
 		
-		:invalid_gmc     => "Sorry, that GMC# is not valid.",
+		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.'
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		:ask_replacement => "This child is already registered.",
 		
@@ -58,6 +58,9 @@ class Columbawawi < SMS::App
 		@rep = ReportParser.new
 		@can = CancelParser.new
 	end
+	
+	
+	
 	
 	def incoming(msg)
 		reporter = Reporter.first_or_create(
@@ -94,6 +97,9 @@ class Columbawawi < SMS::App
 			:text => msg.text,
 			:sent => Time.now)
 	end
+
+
+
 
 	private
 	
@@ -188,7 +194,7 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc object; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc)
+			return msg.respond assemble(:invalid_gmc, [gmc_uid])
 		end
 		
 		# if this child has already been registered, then there
