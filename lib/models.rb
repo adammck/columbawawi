@@ -23,7 +23,7 @@ class Gmc
 	
 	property :id, Integer, :serial=>true
 	property :uid, String, :key=>true, :format=>/^\d{4}$/, :messages => {
-		:format => "GMC UID must be exactly six digits" }
+		:format => "GMC UID must be exactly four digits" }
 	
 	property :title, String
 end
@@ -52,6 +52,7 @@ class Report
 	
 	property :sent, DateTime
 	property :received, DateTime
+	#issue flag
 	belongs_to :child
 
 	def ratio
