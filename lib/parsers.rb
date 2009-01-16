@@ -57,3 +57,10 @@ class ReportParser < Fuzz::Parser
 		add_token "Diarrhea", :boolean
 	end
 end
+
+class CancelParser < Fuzz::Parser
+	def initialize
+		super
+		add_token "UID", UID
+	end
+end

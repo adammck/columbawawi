@@ -26,6 +26,9 @@ class Columbawawi < SMS::App
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
+		:help_cancel => "Oops, to cancel a child's most recent report:\ncancel [gmc#] [child#]",
+
+		:cancelled => " has been cancelled.",
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
 		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
@@ -42,6 +45,7 @@ class Columbawawi < SMS::App
 	def initialize
 		@reg = RegistrationParser.new
 		@rep = ReportParser.new
+		@can = CancelParser.new
 	end
 	
 	
@@ -148,7 +152,8 @@ class Columbawawi < SMS::App
 		c = gmc.children.create(
 			:uid=>child_uid,
 			:age=>data[:age],
-			:gender=>data[:gender])
+			:gender=>data[:gender],
+			:contact=>data[:phone])
 		
 		# build a string summary containing all
 		# of the normalized data that we just
@@ -246,6 +251,39 @@ class Columbawawi < SMS::App
 		end
 	end
 
+	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
+	#serve /cancel/
+	def cancel(msg, str)
+		# parse the message, and reject
+		# it if no tokens could be found
+		unless data = @can.parse(str.to_s)
+			return msg.respond assemble(:help_cancel)
+		end
+		
+		# debug message
+		log "Parsed into: #{data.inspect}", :info
+		log "Unparsed: #{@can.unparsed.inspect}", :info\
+			unless @can.unparsed.empty?
+		
+		# split the UIDs back into gmc+child
+		gmc_uid, child_uid = *data.delete(:uid)
+		
+		# fetch the gmc; abort if it wasn't valid
+		unless gmc = Gmc.first(:uid => gmc_uid)
+			return msg.respond assemble(:invalid_gmc)
+		end
+		
+		# same for the child
+		unless child = gmc.children.first(:uid => child_uid)
+			return msg.respond assemble(:invalid_child)
+		end
+
+		report = child.reports.first(:order => [:sent.desc])
+		latest = report.sent.strftime("%I:%M%p on %m/%d/%Y")
+		report.destroy
+
+		return msg.respond assemble("Report sent at #{latest} for Child #{@can[:uid].humanize}", :cancelled)
+	end
 
 	serve /\Achildren\Z/
 	def children(msg)
