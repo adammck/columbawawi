@@ -252,7 +252,6 @@ class Columbawawi < SMS::App
 	end
 
 	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
-	#serve /cancel/
 	def cancel(msg, str)
 		# parse the message, and reject
 		# it if no tokens could be found
@@ -278,11 +277,15 @@ class Columbawawi < SMS::App
 			return msg.respond assemble(:invalid_child)
 		end
 
-		report = child.reports.first(:order => [:sent.desc])
-		latest = report.sent.strftime("%I:%M%p on %m/%d/%Y")
-		report.destroy
+		if(report = child.reports.first(:order => [:sent.desc]))
+			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y")
+			report.destroy
+			return msg.respond assemble("Report sent at #{latest} for Child #{@can[:uid].humanize}", :canceled)
+		else
+			child.destroy
+			return msg.respond assemble("New Child #{@can[:uid].humanize}", :canceled)
+		end
 
-		return msg.respond assemble("Report sent at #{latest} for Child #{@can[:uid].humanize}", :canceled)
 	end
 
 	serve /\Achildren\Z/
