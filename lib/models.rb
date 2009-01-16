@@ -57,35 +57,21 @@ class Report
 	property :sent, DateTime
 	property :received, DateTime
 	belongs_to :child
-
+	
+	# Returns the weight to height ratio of
+	# this report, or nil, if either fields
+	# are missing.
 	def ratio
-		sprintf("%.2f", attribute_get(:weight)/attribute_get(:height)).to_f
+		w = attribute_get(:weight)
+		h = attribute_get(:height)
+		(w && h) ? sprintf("%.2f", w/h).to_f : nil
 	end
 
 	def moderate?
-		if(ratio < 0.79)
-			if(ratio > 0.70)
-				return true
-			end
-		end
-		if(attribute_get(:muac) < 11.9)
-			if(attribute_get(:muac) > 11.0)
-				return true
-			end
-		end
-		return false
+		(!ratio.nil? and ratio > 0.70 and ratio < 0.79) or (!muac.nil? and muac > 11.0 and muac < 11.9)
 	end
 
 	def severe?
-		if(ratio <= 0.70)
-			return true
-		end
-		if(attribute_get(:muac) <= 11.0)
-			return true
-		end
-		if(attribute_get(:oedema))
-			return true
-		end
-		return false
+		(!ratio.nil? and ratio <= 0.70) or (!muac.nil? and muac < 11.0) or (oedema)
 	end
 end
