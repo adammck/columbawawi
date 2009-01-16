@@ -19,8 +19,10 @@ class Columbawawi < SMS::App
 		
 		:missing_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
 		:invalid_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
-		:notyet_uid  => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		:already_uid => "Oops, I already have a child with that child#.",
+		
+		:invalid_gmc   => "Sorry, that GMC# is not valid.",
+		:invalid_child => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
@@ -114,21 +116,24 @@ class Columbawawi < SMS::App
 		log "Unparsed: #{@reg.unparsed.inspect}", :info\
 			unless @reg.unparsed.empty?
 		
-		# check that the child UID was
-		# provided and valid (may abort)
-		err = check_uid(@reg)
-		return msg.respond assemble(err)\
-			unless err.nil?
+		gmc_uid, child_uid = *data.delete(:uid)
 		
-		# check that this child UID
-		# hasn't already been registered
-		if c = Child.get(data[:uid])
+		# fetch the gmc object; abort if it wasn't valid
+		unless gmc = Gmc.first(:uid => gmc_uid)
+			return msg.respond assemble(:invalid_gmc)
+		end
+		
+		# check that this child UID hasn't
+		# already been registered at this GMC
+		unless gmc.children.all(:uid => child_uid).empty?
 			return msg.respond assemble(:already_uid)
 		end
 		
 		# create the new child in db
-		c = Child.create(data)
-		c.save
+		c = gmc.children.create(
+			:uid=>child_uid,
+			:age=>data[:age],
+			:gender=>data[:gender])
 		
 		# build a string summary containing all
 		# of the normalized data that we just
