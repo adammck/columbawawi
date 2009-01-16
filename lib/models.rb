@@ -19,6 +19,7 @@ class District
 	property :title, String, :length => 60
 end
 
+
 class Gmc
 	include DataMapper::Resource
 	belongs_to :district
@@ -30,6 +31,7 @@ class Gmc
 	
 	property :title, String, :length => 60
 end
+
 
 class Child
 	include DataMapper::Resource
@@ -45,13 +47,17 @@ class Child
 	property :contact, String, :length=>22
 end
 
+
 class Report
 	include DataMapper::Resource
+	belongs_to :child
+	
 	property :id, Integer, :serial=>true
+	
 	property :weight, Float 
 	property :height, Float 
 	property :muac, Float
-	property :oedema, Boolean, :default => false
+	property :oedema, Boolean
 	property :diarrhea, Boolean
 	
 	property :sent, DateTime
@@ -59,34 +65,31 @@ class Report
 	#issue flag
 	belongs_to :child
 
+	
+	# Returns the weight to height ratio of
+	# this report, or nil, if either fields
+	# are missing.
 	def ratio
-		sprintf("%.2f", attribute_get(:weight)/attribute_get(:height)).to_f
+		w = attribute_get(:weight)
+		h = attribute_get(:height)
+		(w && h) ? sprintf("%.2f", w/h).to_f : nil
 	end
 
+	# Returns _true_ if this report indicates a moderately malnourished
+	# child. Note that _false_ is returned if we cannot tell (due to the
+	# _ratio_ or _muac_ being nil), the child is severely malnourished,
+	# or the child is not malnourished at all.
 	def moderate?
-		if(ratio < 0.79)
-			if(ratio > 0.70)
-				return true
-			end
-		end
-		if(attribute_get(:muac) < 11.9)
-			if(attribute_get(:muac) > 11.0)
-				return true
-			end
-		end
-		return false
+		(!ratio.nil? and ratio > 0.70 and ratio < 0.79)\
+		or (!muac.nil? and muac > 11.0 and muac < 11.9)
 	end
 
+	# Returns true if this report indicates a severely malnourished
+	# child, or false if we cannot tell (due to _ratio_ or _muac_
+	# being nil), or the child is not severely malnourished.
 	def severe?
-		if(ratio <= 0.70)
-			return true
-		end
-		if(attribute_get(:muac) <= 11.0)
-			return true
-		end
-		if(attribute_get(:oedema))
-			return true
-		end
-		return false
+		(!ratio.nil? and ratio <= 0.70)\
+		or (!muac.nil? and muac <= 11.0)\
+		or (oedema)
 	end
 end
