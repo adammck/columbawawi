@@ -28,15 +28,6 @@ class UID < Fuzz::Token::Base
 	end
 end
 
-class Village < Fuzz::Token::Base
-	Pattern = '(?:from|of)?([a-z]+)'
-	
-	# because it's very loose, the village
-	# name must come at the end of the msg
-	Options = {
-		:last => true }
-end
-
 
 class RegistrationParser < Fuzz::Parser
 	def initialize
