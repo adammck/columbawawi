@@ -39,7 +39,6 @@ class Child
 	property :age, DateTime
 	property :gender, Enum[:male, :female]
 	property :contact, String, :length=>22
-	property :village, String, :length=>200
 end
 
 class Report
