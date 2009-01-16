@@ -145,8 +145,8 @@ class Columbawawi < SMS::App
 		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
-		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}." : ""
-		msg.respond "Thank you for reporting on Child #{data[:uid]}#{suffix}"
+		suffix = (summary != "") ? ": #{summary}, w/h%=#{r.ratio}." : ""
+		msg.respond "Thank you for reporting on Child #{r.uid}#{suffix}"
 		
 		# send advice to the sender if the
 		# child appears to be severely or
