@@ -31,7 +31,7 @@ class Columbawawi < SMS::App
 		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
 
 		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
-		:issue_telescoping => " seems to be much taller than last month. Please recheck the height measurement.",
+		:issue_gogogadget=> " seems to be much taller than last month. Please recheck the height measurement.",
 		:issue_skinnier => " seems to have lost more than 5kg since last month. Please recheck the weight measurement.",
 		:issue_plumpier => " seems to have gained more than 5kg since last month. Please recheck the weight measurement.",
 		:issue_pencil => " seems to have a very small MUAC. Please recheck the MUAC measurement.",
@@ -60,36 +60,51 @@ class Columbawawi < SMS::App
 		nil
 	end
 	
-
+	# check the childs recent history for alarming
+	# trends and also sanity check data points 
+	# by comparing childs past data
 	def issues(child)
-		kid = Child.get(child)	
-		reports = kid.report.all(:order => [:sent.dec]) 
+		# gather all reports most recent to oldest
+		reports = child.reports.all(:order => [:sent.desc]) 
+
+		# remove the one just sent in
 		report = reports.shift
 
+		# a place to put issues, since
+		# there can be several
 		issues = []
 
-		#compare this months height to last months
+		# compare this months height to last months
 		hd = reports.first.height - report.height
+
+		# go go gadget legs
 		if(hd < 0.0)
-			issues << :issue_shinkage
-		elsif(hd > 3.0)
-			issues << :issue_telescoping
+			issues << :issue_gogogadget
+
+		# losing height
+		elsif(hd > 2.0)
+			issues << :issue_shrinkage
 		end
 		
-		#compare this months weight to last months
+		# compare this months weight to last months
 		wd = reports.first.weight - report.weight
+
+		# losing weight
 		if(wd > 5.0)
 			issues << :issue_skinnier
-		elsif(wd < 5.0)
+
+		# gaining weight
+		elsif(wd < -5.0)
 			issues << :issue_plumpier
 		end
 
-		#check that muac is reasonable
+		# check that MUAC is reasonable
 		if(report.muac < 5.0)
 			issues << :issue_pencil
 		end
 
-		#check for shitty months
+		# check for shitty months
+		# (persistant diarrhea)
 		if(report.diarrhea)
 			if(reports.first.diarrhea)
 				issues << :issue_shitty
@@ -223,10 +238,10 @@ class Columbawawi < SMS::App
 		
 		# send alerts if data seems unreasonable
 		# or if there are alarming trends
-		alerts = issues(c)
+		alerts = issues(child)
 		if(alerts)
 			alerts.each do |alert|
-				msg.respond assemble("Child #{@rep[:uid].humanize}", "#{alert}")
+				msg.respond assemble("Child #{@rep[:uid].humanize}", alert)
 			end
 		end
 	end
