@@ -7,7 +7,7 @@ here = File.dirname(__FILE__)
 require "#{here}/../models.rb"
 require "#{here}/../parsers.rb"
 
-# import rubysms, which does
+# import rubysms, which
 # is not a ruby gem yet :(
 require "#{here}/../../../rubysms/lib/sms.rb"
 
@@ -46,7 +46,6 @@ class Columbawawi < SMS::App
 			return :missing_uid
 		end
 		
-		
 		# no errors
 		# to report
 		nil
@@ -55,12 +54,12 @@ class Columbawawi < SMS::App
 	
 	public
 	
-	serve /\A(?:new\s*child|new|reg|register)(.+)\Z/i
+	serve /\A(?:new\s*child|new|n|reg|register)(?:\s+(.+))?\Z/i
 	def register(msg, str)
 	
 		# parse the message, and reject
 		# it if no tokens could be found
-		unless data = @reg.parse(str)
+		unless data = @reg.parse(str.to_s)
 			return msg.respond assemble(:dont_understand, " ", :help_new)
 		end
 		
@@ -101,7 +100,7 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\A(?:report\s*on|report|rep|r)(.+)\Z/i
+	serve /\A(?:report\s*on|report|rep|r)(?:\s+(.+))\Z/i
 	def report(msg, str)
 		
 		# parse the message, and reject
@@ -139,7 +138,7 @@ class Columbawawi < SMS::App
 		# parsed, as flat key=value pairs
 		summary = (@rep.matches.collect do |m|
 			unless m.token.name == :uid
-				"#{m.token.name}=#{m.value}"
+				"#{m.token.name}=#{m.humanize}"
 			end
 		end).compact.join(", ")
 		
