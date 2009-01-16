@@ -22,11 +22,11 @@ class Columbawawi < SMS::App
 		:notyet_uid  => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		:already_uid => "Oops, I already have a child with that child#.",
 		
-		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact] [village]",
-		:help_report =>  "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
+		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
+		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 
-		:mal_mod     => " is moderately malnourished. Please refer to Supplementary Feeding Programme (SFP) and counsel caregiver on child nutrition.",
-		:mal_sev     => " has severe acute malnutrition. Please refer child to the NRU/ TFP.  Administer 50 ml of 10% sugar to child immediately to prevent hypoglycaemia and explain to caregiver the reason for admission and centre procedures.",
+		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
+		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
 	}
 	
 	
@@ -96,7 +96,7 @@ class Columbawawi < SMS::App
 		# verify receipt of this registration,
 		# including all tokens that we parsed
 		suffix = (summary != "") ? ": #{summary}" : ""
-		msg.respond "Thank you for registering Child #{data[:uid]}#{suffix}"
+		msg.respond "Thank you for registering Child #{@reg[:uid].humanize}#{suffix}"
 	end
 	
 	
@@ -144,17 +144,17 @@ class Columbawawi < SMS::App
 		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
-		suffix = (summary != "") ? ": #{summary}, ratio=#{r.ratio}." : ""
-		msg.respond "Thank you for reporting on Child #{data[:uid]}#{suffix}"
+		suffix = (summary != "") ? ": #{summary}, w/h%=#{r.ratio}." : ""
+		msg.respond "Thank you for reporting on Child #{@rep[:uid].humanize}#{suffix}"
 		
 		# send advice to the sender if the
 		# child appears to be severely or
 		# moderately malnourished
 		if r.severe?
-			msg.respond assemble("Child #{data[:uid]}", :mal_sev)
+			msg.respond assemble("Child #{@rep[:uid].humanize}", :mal_sev)
 			
 		elsif r.moderate?
-			msg.respond assemble("Child #{data[:uid]}", :mal_mod)
+			msg.respond assemble("Child #{@rep[:uid].humanize}", :mal_mod)
 		end
 	end
 

@@ -14,6 +14,12 @@ class UID < Fuzz::Token::Base
 		child_str.length == 1 ? (child = '0' + child_str) : (child = child_str)
 		(gmc_str + child).to_i
 	end
+	
+	def humanize(uid_i)
+		gmc = uid_i.to_s.slice(0..3)
+		kid = uid_i.to_s.slice(4..6)
+		kid << ' at GMC ' << gmc
+	end
 end
 
 class Village < Fuzz::Token::Base
