@@ -62,6 +62,9 @@ class Report
 	
 	property :sent, DateTime
 	property :received, DateTime
+	#issue flag
+	belongs_to :child
+
 	
 	# Returns the weight to height ratio of
 	# this report, or nil, if either fields
