@@ -78,6 +78,16 @@ class Columbawawi < SMS::App
 		# there can be several
 		issues = []
 
+		# check that MUAC is reasonable
+		if(report.muac < 5.0)
+			issues << :issue_pencil
+		end
+
+		# dont check for historical trends
+		# if there are no other reports
+		# to compare
+		return issues unless reports
+
 		# compare this months height to last months
 		hd = reports.first.height - report.height
 
@@ -100,11 +110,6 @@ class Columbawawi < SMS::App
 		# gaining weight
 		elsif(wd < -5.0)
 			issues << :issue_plumpier
-		end
-
-		# check that MUAC is reasonable
-		if(report.muac < 5.0)
-			issues << :issue_pencil
 		end
 
 		# check for shitty months
