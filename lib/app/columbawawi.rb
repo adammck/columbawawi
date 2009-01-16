@@ -24,11 +24,11 @@ class Columbawawi < SMS::App
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		:ask_replacement => "This child is already registered. If you wish to replace them, please reply: REPLACE",
 		
-		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
-		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
+		:help_new    => "Oops, to register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
+		:help_report => "Oops, to report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 		:help_cancel => "Oops, to cancel a child's most recent report:\ncancel [gmc#] [child#]",
 
-		:cancelled => " has been cancelled.",
+		:canceled => " has been canceled.",
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
 		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
@@ -127,7 +127,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str.to_s)
-			return msg.respond assemble(:dont_understand, " ", :help_new)
+			return msg.respond assemble(:help_new)
 		end
 		
 		# debug messages
@@ -177,7 +177,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @rep.parse(str)
-			return msg.respond assemble(:dont_understand, " ", :help_report)
+			return msg.respond assemble(:help_report)
 		end
 		
 		# debug message
@@ -282,7 +282,7 @@ class Columbawawi < SMS::App
 		latest = report.sent.strftime("%I:%M%p on %m/%d/%Y")
 		report.destroy
 
-		return msg.respond assemble("Report sent at #{latest} for Child #{@can[:uid].humanize}", :cancelled)
+		return msg.respond assemble("Report sent at #{latest} for Child #{@can[:uid].humanize}", :canceled)
 	end
 
 	serve /\Achildren\Z/
