@@ -27,6 +27,13 @@ class Columbawawi < SMS::App
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
 		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
+
+		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
+		:issue_telescoping => " seems to be much taller than last month. Please recheck the height measurement.",
+		:issue_skinnier => " seems to have lost more than 5kg since last month. Please recheck the weight measurement.",
+		:issue_plumpier => " seems to have gained more than 5kg since last month. Please recheck the weight measurement.",
+		:issue_pencil => " seems to have a very small MUAC. Please recheck the MUAC measurement.",
+		:issue_shitty => " also had diarrhea last month. Please refer the child to a clinician.",
 	}
 	
 	
@@ -49,6 +56,45 @@ class Columbawawi < SMS::App
 		# no errors
 		# to report
 		nil
+	end
+	
+
+	def issues(child)
+		kid = Child.get(child)	
+		reports = kid.report.all(:order => [:sent.dec]) 
+		report = reports.shift
+
+		issues = []
+
+		#compare this months height to last months
+		hd = reports.first.height - report.height
+		if(hd < 0.0)
+			issues << :issue_shinkage
+		elsif(hd > 3.0)
+			issues << :issue_telescoping
+		end
+		
+		#compare this months weight to last months
+		wd = reports.first.weight - report.weight
+		if(wd > 5.0)
+			issues << :issue_skinnier
+		elsif(wd < 5.0)
+			issues << :issue_plumpier
+		end
+
+		#check that muac is reasonable
+		if(report.muac < 5.0)
+			issues << :issue_pencil
+		end
+
+		#check for shitty months
+		if(report.diarrhea)
+			if(reports.first.diarrhea)
+				issues << :issue_shitty
+			end
+		end
+
+		return issues	
 	end
 	
 	
@@ -129,7 +175,7 @@ class Columbawawi < SMS::App
 		
 		#sdata[:child_id] = c.id
 		#puts data.inspect
-		# creaate the Report object in db
+		# create the Report object in db
 		r = Report.create(data)
 		r.save
 		
@@ -156,9 +202,18 @@ class Columbawawi < SMS::App
 		elsif r.moderate?
 			msg.respond assemble("Child #{@rep[:uid].humanize}", :mal_mod)
 		end
+		
+		# send alerts if data seems unreasonable
+		# or if there are alarming trends
+		alerts = issues(c)
+		if(alerts)
+			alerts.each do |alert|
+				msg.respond assemble("Child #{@rep[:uid].humanize}", "#{alert}")
+			end
+		end
 	end
 
-	
+
 	serve /\Achildren\Z/
 	def children(msg)
 		summary = Child.all.collect do |child|
