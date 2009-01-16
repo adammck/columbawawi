@@ -18,7 +18,7 @@ class UID < Fuzz::Token::Base
 	def humanize(uid_i)
 		gmc = uid_i.to_s.slice(0..3)
 		kid = uid_i.to_s.slice(4..6)
-		gmc << ' ' << kid
+		kid << ' at GMC ' << gmc
 	end
 end
 
