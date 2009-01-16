@@ -19,10 +19,10 @@ class Columbawawi < SMS::App
 		
 		:missing_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
 		:invalid_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
-		:already_uid => "Oops, I already have a child with that child#.",
 		
-		:invalid_gmc   => "Sorry, that GMC# is not valid.",
-		:invalid_child => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
+		:invalid_gmc     => "Sorry, that GMC# is not valid.",
+		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
+		:ask_replacement => "This child is already registered. If you wish to replace them, please reply: REPLACE",
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
@@ -105,7 +105,7 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\A(?:report\s*on|report|rep|r)(?:\s+(.+))\Z/i
+	serve /\A(?:report\s*on|report|rep|r)(?:\s+(.+))?\Z/i
 	def report(msg, str)
 		
 		# parse the message, and reject
@@ -119,24 +119,35 @@ class Columbawawi < SMS::App
 		log "Unparsed: #{@rep.unparsed.inspect}", :info\
 			unless @rep.unparsed.empty?
 		
-		# check that the child UID was
-		# provided and valid (may abort)
-		err = check_uid(@rep)
-		return msg.respond assemble(err)\
-			unless err.nil?
+		# split the UIDs back into gmc+child
+		gmc_uid, child_uid = *data.delete(:uid)
 		
-		# fetch the child, and abort if
-		# none could be found by the UID
-		#uid = data.delete(:uid)
-		unless c = Child.get(data[:uid])
-			return msg.respond assemble(:notyet_uid)
+		# fetch the gmc; abort if it wasn't valid
+		unless gmc = Gmc.first(:uid => gmc_uid)
+			return msg.respond assemble(:invalid_gmc)
 		end
 		
-		#sdata[:child_id] = c.id
-		#puts data.inspect
-		# creaate the Report object in db
-		r = Report.create(data)
-		r.save
+		# same for the child
+		unless child = gmc.children.first(:uid => child_uid)
+			return msg.respond assemble(:invalid_child)
+		end
+		
+		# create and save the new
+		# report in the database
+		r = child.reports.create(
+			
+			# reported fields (some may be nil,
+			# which is okay). TODO: should be
+			# able to just pass the data hash
+			:weight => data[:weight],
+			:height => data[:height],
+			:muac => data[:muac],
+			:oedema => data[:oedema],
+			:diarrhea => data[:diarrhea],
+			
+			# timestamps
+			:sent => msg.sent,
+			:received => Time.now)
 		
 		# build a string summary containing all
 		# of the normalized data that we just
@@ -148,8 +159,10 @@ class Columbawawi < SMS::App
 		end).compact.join(", ")
 		
 		# verify receipt of this registration,
-		# including all tokens that we parsed
-		suffix = (summary != "") ? ": #{summary}, w/h%=#{r.ratio}." : ""
+		# including all tokens that we parsed,
+		# and the w/h ratio, if available
+		suffix = (summary != "") ? ": #{summary}" : ""
+		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
 		msg.respond "Thank you for reporting on Child #{@rep[:uid].humanize}#{suffix}"
 		
 		# send advice to the sender if the
