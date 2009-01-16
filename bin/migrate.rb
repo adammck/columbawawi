@@ -13,4 +13,9 @@ end
 here = File.dirname(__FILE__)
 require "#{here}/../lib/models.rb"
 DataMapper.auto_migrate!
-puts "Done."
+
+# create the pilot districts and gmcs
+Gmc.create(:district => District.create(:title => "Kasungu"), :uid => 1001, :title => "Tamani")
+Gmc.create(:district => District.create(:title => "Salima"),  :uid => 1001, :title => "Chipoka")
+Gmc.create(:district => District.create(:title => "Dedza"),   :uid => 1001, :title => "Chikuse")
+puts "Migrated."

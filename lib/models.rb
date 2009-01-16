@@ -11,10 +11,30 @@ db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
 DataMapper.setup(:default, "sqlite3:///#{db_dir}/dev.db")
 
 
+class District
+	include DataMapper::Resource
+	property :id, Integer, :serial=>true
+	property :title, String
+end
+
+class Gmc
+	include DataMapper::Resource
+	belongs_to :district
+	
+	property :id, Integer, :serial=>true
+	property :uid, String, :key=>true, :format=>/^\d{4}$/, :messages => {
+		:format => "GMC UID must be exactly six digits" }
+	
+	property :title, String
+end
+
 class Child
 	include DataMapper::Resource
-	property :uid, String, :key=>true, :format=>/^\d{6}$/, :messages => {
-		:format => "Child UID must be exactly six digits" }
+	belongs_to :gmc
+
+	property :id, Integer, :serial=>true
+	property :uid, String, :key=>true, :format=>/^\d{2}$/, :messages => {
+		:format => "Child ID must be exactly two digits" }
 	
 	property :age, DateTime
 	property :gender, Enum[:male, :female]
@@ -25,13 +45,15 @@ end
 class Report
 	include DataMapper::Resource
 	property :id, Integer, :serial=>true
-	property :uid, String
 	property :weight, Float 
 	property :height, Float 
 	property :muac, Float
 	property :oedema, Boolean, :default => false
 	property :diarrhea, Boolean
-	#belongs_to :child
+	
+	property :sent, DateTime
+	property :received, DateTime
+	belongs_to :child
 
 	def ratio
 		sprintf("%.2f", attribute_get(:height)/attribute_get(:weight)).to_f
