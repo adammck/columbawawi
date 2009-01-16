@@ -11,6 +11,33 @@ db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
 DataMapper.setup(:default, "sqlite3:///#{db_dir}/dev.db")
 
 
+class Reporter
+	include DataMapper::Resource
+	has n, :children
+	has n, :reports
+	
+	property :id, Integer, :serial=>true
+	property :phone, String, :key=>true, :length=>22
+end
+
+class RawMessage
+	include DataMapper::Resource
+	belongs_to :reporter
+	
+	property :id, Integer, :serial=>true
+	property :direction, Enum[:incoming, :outgoing]
+	property :sent, DateTime
+	property :text, Text
+	
+	# only relevant to incoming
+	property :received, DateTime
+	
+	# for linking raw messages recursively
+	belongs_to :in_response_to, :class_name => "RawMessage"
+	has n, :responses, :class_name => "RawMessage"
+end
+
+
 class District
 	include DataMapper::Resource
 	has n, :gmcs
@@ -22,6 +49,7 @@ end
 
 class Gmc
 	include DataMapper::Resource
+	belongs_to :reporter
 	belongs_to :district
 	has n, :children
 	
@@ -35,6 +63,7 @@ end
 
 class Child
 	include DataMapper::Resource
+	belongs_to :reporter
 	belongs_to :gmc
 	has n, :reports
 	
@@ -50,6 +79,7 @@ end
 
 class Report
 	include DataMapper::Resource
+	belongs_to :reporter
 	belongs_to :child
 	
 	property :id, Integer, :serial=>true
@@ -59,11 +89,8 @@ class Report
 	property :muac, Float
 	property :oedema, Boolean
 	property :diarrhea, Boolean
-	
-	property :sent, DateTime
-	property :received, DateTime
+	property :date, DateTime
 	#issue flag
-	belongs_to :child
 
 	
 	# Returns the weight to height ratio of

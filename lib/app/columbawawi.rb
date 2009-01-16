@@ -12,6 +12,13 @@ require "#{here}/../parsers.rb"
 require "#{here}/../../../rubysms/lib/sms.rb"
 
 
+# monkey patch the incoming message class, to
+# add a slot to temporarily store a RawMessage
+# object, to be found by Columbawawi#outgoing
+class SMS::Incoming
+	attr_accessor :raw_message
+end
+
 class Columbawawi < SMS::App
 	
 	Messages = {
@@ -41,15 +48,56 @@ class Columbawawi < SMS::App
 		@rep = ReportParser.new
 	end
 	
+	def incoming(msg)
+		reporter = Reporter.first_or_create(
+			:phone => msg.sender)
+
+		# create and save the log message
+		# before even inspecting it, to be
+		# sure that EVERYTHING is logged
+		msg.raw_message =\
+		RawMessage.create(
+			:reporter => reporter,
+			:direction => :incoming,
+			:text => msg.text,
+			:sent => msg.sent,
+			:received => Time.now)
+		
+		# continue processing as usual
+		super
+	end
+	
+	def outgoing(msg)
+		reporter = Reporter.first_or_create(
+			:phone => msg.recipient)
+		
+		# if this message was spawned in response to
+		# another, fetch the object, to link them up
+		irt = msg.in_response_to ? msg.in_response_to.raw_message : nil
+		
+		# create and save the log message
+		RawMessage.create(
+			:reporter => reporter,
+			:direction => :outgoing,
+			:in_response_to => irt,
+			:text => msg.text,
+			:sent => Time.now)
+	end
 
 	private
+	
+	# Returns a Reporter object for the given phone
+	# number, automatically creating it if necessary.
+	def reporter(phone)
+		Reporter.first_or_create(:phone => phone)
+	end
 	
 	# check the childs recent history for alarming
 	# trends and also sanity check data points 
 	# by comparing childs past data
 	def issues(child)
 		# gather all reports most recent to oldest
-		reports = child.reports.all(:order => [:sent.desc]) 
+		reports = child.reports.all(:order => [:date.desc]) 
 
 		# remove the one just sent in
 		report = reports.shift
@@ -103,7 +151,11 @@ class Columbawawi < SMS::App
 	
 	serve /\A(?:new\s*child|new|n|reg|register)(?:\s+(.+))?\Z/i
 	def register(msg, str)
-	
+		
+		# fetch or create a reporter object exists for
+		# this caller, to own any objects that we create
+		reporter = Reporter.first_or_create(:phone => msg.sender)
+		
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str.to_s)
@@ -132,6 +184,7 @@ class Columbawawi < SMS::App
 		
 		# create the new child in db
 		c = gmc.children.create(
+			:reporter=>reporter,
 			:uid=>child_uid,
 			:age=>data[:age],
 			:gender=>data[:gender])
@@ -191,10 +244,7 @@ class Columbawawi < SMS::App
 			:muac => data[:muac],
 			:oedema => data[:oedema],
 			:diarrhea => data[:diarrhea],
-			
-			# timestamps
-			:sent => msg.sent,
-			:received => Time.now)
+			:date => msg.sent)
 		
 		# build a string summary containing all
 		# of the normalized data that we just
