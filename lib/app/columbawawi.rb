@@ -12,6 +12,13 @@ require "#{here}/../parsers.rb"
 require "#{here}/../../../rubysms/lib/sms.rb"
 
 
+# monkey patch the incoming message class, to
+# add a slot to temporarily store a RawMessage
+# object, to be found by Columbawawi#outgoing
+class SMS::Incoming
+	attr_accessor :raw_message
+end
+
 class Columbawawi < SMS::App
 	
 	Messages = {
@@ -19,12 +26,9 @@ class Columbawawi < SMS::App
 		:oops => "Oops! ",
 		:child => "Child ",
 		
-		:missing_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
-		:invalid_uid => "Oops, please check the GMC# (4 numbers) and child# (2 numbers) and try again.",
-		
 		:invalid_gmc     => "Sorry, that GMC# is not valid.",
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
-		:ask_replacement => "This child is already registered. If you wish to replace them, please reply: REPLACE",
+		:ask_replacement => "This child is already registered.",
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
@@ -38,7 +42,7 @@ class Columbawawi < SMS::App
 		:canceled => " has been canceled.",
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
-		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/ TFP.  Administer 50 ml of 10% sugar immediately.",
+		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10% sugar immediately.",
 
 		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
 		:issue_gogogadget=> " seems to be much taller than last month. Please recheck the height measurement.",
@@ -55,20 +59,48 @@ class Columbawawi < SMS::App
 		@can = CancelParser.new
 	end
 	
+	def incoming(msg)
+		reporter = Reporter.first_or_create(
+			:phone => msg.sender)
+
+		# create and save the log message
+		# before even inspecting it, to be
+		# sure that EVERYTHING is logged
+		msg.raw_message =\
+		RawMessage.create(
+			:reporter => reporter,
+			:direction => :incoming,
+			:text => msg.text,
+			:sent => msg.sent,
+			:received => Time.now)
+		
+		# continue processing as usual
+		super
+	end
 	
+	def outgoing(msg)
+		reporter = Reporter.first_or_create(
+			:phone => msg.recipient)
+		
+		# if this message was spawned in response to
+		# another, fetch the object, to link them up
+		irt = msg.in_response_to ? msg.in_response_to.raw_message : nil
+		
+		# create and save the log message
+		RawMessage.create(
+			:reporter => reporter,
+			:direction => :outgoing,
+			:in_response_to => irt,
+			:text => msg.text,
+			:sent => Time.now)
+	end
+
 	private
 	
-	def check_uid(parser, uid=nil)
-		
-		# the child UID is the only required
-		# field, so reject if it is missing
-		unless parser[:uid]
-			return :missing_uid
-		end
-		
-		# no errors
-		# to report
-		nil
+	# Returns a Reporter object for the given phone
+	# number, automatically creating it if necessary.
+	def reporter(phone)
+		Reporter.first_or_create(:phone => phone)
 	end
 	
 	# check the childs recent history for alarming
@@ -76,7 +108,7 @@ class Columbawawi < SMS::App
 	# by comparing childs past data
 	def issues(child)
 		# gather all reports most recent to oldest
-		reports = child.reports.all(:order => [:sent.desc]) 
+		reports = child.reports.all(:order => [:date.desc]) 
 
 		# remove the one just sent in
 		report = reports.shift
@@ -135,7 +167,11 @@ class Columbawawi < SMS::App
 	
 	serve /\A(?:new\s*child|new|n|reg|register)(?:\s+(.+))?\Z/i
 	def register(msg, str)
-	
+		
+		# fetch or create a reporter object exists for
+		# this caller, to own any objects that we create
+		reporter = Reporter.first_or_create(:phone => msg.sender)
+		
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str.to_s)
@@ -147,6 +183,7 @@ class Columbawawi < SMS::App
 		log "Unparsed: #{@reg.unparsed.inspect}", :info\
 			unless @reg.unparsed.empty?
 		
+		# split the UIDs back into gmc+child
 		gmc_uid, child_uid = *data.delete(:uid)
 		
 		# fetch the gmc object; abort if it wasn't valid
@@ -154,14 +191,16 @@ class Columbawawi < SMS::App
 			return msg.respond assemble(:invalid_gmc)
 		end
 		
-		# check that this child UID hasn't
-		# already been registered at this GMC
-		unless gmc.children.all(:uid => child_uid).empty?
-			return msg.respond assemble(:already_uid)
+		# if this child has already been registered, then there
+		# is trouble afoot. we must ask what has happened, and
+		# wait for a response
+		if gmc.children.first(:uid => child_uid)
+			return msg.respond assemble(:ask_replacement)
 		end
 		
 		# create the new child in db
 		c = gmc.children.create(
+			:reporter=>reporter,
 			:uid=>child_uid,
 			:age=>data[:age],
 			:gender=>data[:gender],
@@ -222,10 +261,7 @@ class Columbawawi < SMS::App
 			:muac => data[:muac],
 			:oedema => data[:oedema],
 			:diarrhea => data[:diarrhea],
-			
-			# timestamps
-			:sent => msg.sent,
-			:received => Time.now)
+			:date => msg.sent)
 		
 		# build a string summary containing all
 		# of the normalized data that we just
@@ -262,6 +298,7 @@ class Columbawawi < SMS::App
 			end
 		end
 	end
+	
 
 	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
 	def cancel(msg, str)
@@ -302,18 +339,7 @@ class Columbawawi < SMS::App
 			child.destroy
 			return msg.respond assemble(:canceled_new, :child ,"#{@can[:uid].humanize}", :canceled)
 		end
-
 	end
-
-	serve /\Achildren\Z/
-	def children(msg)
-		summary = Child.all.collect do |child|
-			child.uid
-		end.compact.join(", ")
-		
-		msg.respond "Registered Children: #{summary}"
-	end
-	
 	
 	serve /help/
 	def help(msg)
