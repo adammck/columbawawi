@@ -32,6 +32,9 @@ class Columbawawi < SMS::App
 
 		:thanks_new => "Thank you for registering Child ",
 		:thanks_report => "Thank you for reporting on Child ",
+
+		:canceled_new => "New ",
+		:canceled_report => "Report sent at ", 
 		:canceled => " has been canceled.",
 
 		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
@@ -288,14 +291,14 @@ class Columbawawi < SMS::App
 
 		# try to find the child's most recent report and destroy it
 		if(report = child.reports.first(:order => [:sent.desc]))
-			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y")
+			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y for ")
 			report.destroy
-			return msg.respond assemble("Report sent at #{latest} for ", :child ,"#{@can[:uid].humanize}", :canceled)
+			return msg.respond assemble(:canceled_report,"#{latest}", :child ,"#{@can[:uid].humanize}", :canceled)
 
 		# otherwise destroy the child
 		else
 			child.destroy
-			return msg.respond assemble("New ", :child ,"#{@can[:uid].humanize}", :canceled)
+			return msg.respond assemble(:canceled_new, :child ,"#{@can[:uid].humanize}", :canceled)
 		end
 
 	end
