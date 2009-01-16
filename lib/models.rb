@@ -68,6 +68,7 @@ class Child
 	has n, :reports
 	
 	property :id, Integer, :serial=>true
+	property :cancelled, ParanoidBoolean
 	property :uid, String, :key=>true, :format=>/^\d{2}$/, :messages => {
 		:format => "Child ID must be exactly two digits" }
 	
@@ -83,6 +84,7 @@ class Report
 	belongs_to :child
 	
 	property :id, Integer, :serial=>true
+	property :cancelled, ParanoidBoolean
 	
 	property :weight, Float 
 	property :height, Float 
