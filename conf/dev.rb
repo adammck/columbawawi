@@ -3,7 +3,6 @@
 
 $conf = {
 	:backends => {
-		"HTTP" => [:http],
-		"DRB"  => [:drb]
+		"HTTP" => [:http]
 	}
 }
