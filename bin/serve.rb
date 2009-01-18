@@ -3,6 +3,7 @@
 
 here = File.dirname(__FILE__)
 require "#{here}/../lib/app/columbawawi.rb"
+require "#{here}/../lib/app/logger.rb"
 
 # load the appropriate conf, based
 # on arguments (or default to dev

@@ -12,21 +12,14 @@ require "#{here}/../parsers.rb"
 require "#{here}/../../../rubysms/lib/sms.rb"
 
 
-# monkey patch the incoming message class, to
-# add a slot to temporarily store a RawMessage
-# object, to be found by Columbawawi#outgoing
-class SMS::Incoming
-	attr_accessor :raw_message
-end
 
 class Columbawawi < SMS::App
-	
 	Messages = {
 		:dont_understand => "Sorry, I don't understand.",
 		:oops => "Oops! ",
 		:child => "Child ",
 		
-		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.'
+		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.',
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
 		:ask_replacement => "This child is already registered.",
 		
@@ -57,45 +50,6 @@ class Columbawawi < SMS::App
 		@reg = RegistrationParser.new
 		@rep = ReportParser.new
 		@can = CancelParser.new
-	end
-	
-	
-	
-	
-	def incoming(msg)
-		reporter = Reporter.first_or_create(
-			:phone => msg.sender)
-
-		# create and save the log message
-		# before even inspecting it, to be
-		# sure that EVERYTHING is logged
-		msg.raw_message =\
-		RawMessage.create(
-			:reporter => reporter,
-			:direction => :incoming,
-			:text => msg.text,
-			:sent => msg.sent,
-			:received => Time.now)
-		
-		# continue processing as usual
-		super
-	end
-	
-	def outgoing(msg)
-		reporter = Reporter.first_or_create(
-			:phone => msg.recipient)
-		
-		# if this message was spawned in response to
-		# another, fetch the object, to link them up
-		irt = msg.in_response_to ? msg.in_response_to.raw_message : nil
-		
-		# create and save the log message
-		RawMessage.create(
-			:reporter => reporter,
-			:direction => :outgoing,
-			:in_response_to => irt,
-			:text => msg.text,
-			:sent => Time.now)
 	end
 
 
