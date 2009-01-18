@@ -232,7 +232,7 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc)
+			return msg.respond assemble(:invalid_gmc, [gmc_uid])
 		end
 		
 		# same for the child
