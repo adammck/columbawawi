@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+# vim: noet
+
 class Reporter
 	include DataMapper::Resource
 	has n, :children

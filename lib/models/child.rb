@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+# vim: noet
+
 class Child
 	include DataMapper::Resource
 	belongs_to :reporter

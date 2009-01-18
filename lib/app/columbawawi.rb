@@ -2,35 +2,13 @@
 # vim: noet
 
 
-# import local dependancies
-here = File.dirname(__FILE__)
-
-# import datamapper
-require "rubygems"
-require "dm-core"
-require "dm-types"
-DataMapper.setup(:default, {:host => "localhost", :adapter => "mysql",\
-				:database => "columbawawi",\
-				:username => "unicef", :password => "m3p3m3p3"})
-
-# import the ugly ratios
-require "#{here}/../ratios.rb"
-
-# import models
-require "#{here}/../models/reporter.rb"
-require "#{here}/../models/raw_message.rb"
-require "#{here}/../models/district.rb"
-require "#{here}/../models/gmc.rb"
-require "#{here}/../models/child.rb"
-require "#{here}/../models/report.rb"
-
 # import parsers
+here = File.dirname(__FILE__)
 require "#{here}/../parsers.rb"
 
 # import rubysms, which
 # is not a ruby gem yet :(
 require "#{here}/../../../rubysms/lib/sms.rb"
-
 
 
 class Columbawawi < SMS::App

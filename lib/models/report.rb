@@ -1,3 +1,14 @@
+#!/usr/bin/env ruby
+# vim: noet
+
+
+# import the ugly ratio lookup table,
+# which we need to calculate whether
+# reports indicate malnourishment
+here = File.dirname(__FILE__)
+require "#{here}/../ratios.rb"
+
+
 class Report
 	include DataMapper::Resource
 	belongs_to :reporter
