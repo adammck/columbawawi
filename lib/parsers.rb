@@ -59,7 +59,9 @@ class ReportParser < Fuzz::Parser
 	end
 end
 
-class CancelParser < Fuzz::Parser
+# A boring parser for operations that only
+# require a GMC+CHILD UID, like CANCEL or DIED
+class UidParser < Fuzz::Parser
 	def initialize
 		super
 		add_token "UID", UID
