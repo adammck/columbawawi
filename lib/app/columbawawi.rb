@@ -100,7 +100,6 @@ class Columbawawi < SMS::App
 	
 	# check the childs recent history for alarming
 	# trends and also sanity check data points 
-	# by comparing childs past data
 	def issues(report)
 
 		# gather insanities and turn into :issue_insanity
@@ -281,7 +280,7 @@ class Columbawawi < SMS::App
 		if(report = child.reports.first(:order => [:date.desc]))
 
 			# TODO 'on' and 'for' should be messages before this is i18n-ed
-			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y for ")
+			latest = report.date.strftime("%I:%M%p on %m/%d/%Y for ")
 			report.destroy
 			return msg.respond assemble(:canceled_report,"#{latest}", :child ,"#{@can[:uid].humanize}", :canceled)
 
