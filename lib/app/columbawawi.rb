@@ -40,9 +40,16 @@ class Columbawawi < SMS::App
 
 		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
 		:issue_gogogadget=> " seems to be much taller than last month. Please recheck the height measurement.",
-		:issue_skinnier => " seems to have lost more than 5kg since last month. Please recheck the weight measurement.",
-		:issue_plumpier => " seems to have gained more than 5kg since last month. Please recheck the weight measurement.",
+		:issue_too_tall => " seems to be very tall. Please recheck height measurement.",
+		:issue_too_short => " seems to be very short. Please recheck height measurement.",
+
+		:issue_skinnier => " seems to have lost more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_plumpier => " seems to have gained more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_too_light => " seems to be very light. Please recheck weight measurement.",
+		:issue_too_fat => " seems to be very heavy. Please recheck weight measurement.",
+
 		:issue_pencil => " seems to have a very small MUAC. Please recheck the MUAC measurement.",
+		:issue_too_young => " is too young for MUAC measurements. Only collect MUAC if child is older than 6 months.",
 		:issue_shitty => " also had diarrhea last month. Please refer the child to a clinician.",
 	}
 	
@@ -94,58 +101,31 @@ class Columbawawi < SMS::App
 	# check the childs recent history for alarming
 	# trends and also sanity check data points 
 	# by comparing childs past data
-	def issues(child)
-		# gather all reports most recent to oldest
-		reports = child.reports.all(:order => [:date.desc]) 
-
-		# remove the one just sent in
-		report = reports.shift
-
+	def issues(report)
 		# a place to put issues, since
 		# there can be several
 		issues = []
 
 		# check that MUAC is reasonable
-		if(report.muac < 5.0)
-			issues << :issue_pencil
-		end
+		m = report.insane_muac?
+		issues << :issue_pencil if m == :too_small
+		issues << :issue_too_young if m == :too_young
 
-		# dont check for historical trends
-		# if there are no other reports
-		# to compare
-		return issues unless reports.empty?
+		h = report.insane_height?
+		issues << :issue_gogogadget if h == :gogogadget
+		issues << :issue_shrinkage if h == :shrinkage
+		issues << :issue_too_tall if h == :too_tall
+		issues << :issue_too_short if h == :too_short
 
-		# compare this months height to last months
-		hd = reports.first.height - report.height
-
-		# go go gadget legs
-		if(hd < 0.0)
-			issues << :issue_gogogadget
-
-		# losing height
-		elsif(hd > 2.0)
-			issues << :issue_shrinkage
-		end
-		
-		# compare this months weight to last months
-		wd = reports.first.weight - report.weight
-
-		# losing weight
-		if(wd > 5.0)
-			issues << :issue_skinnier
-
-		# gaining weight
-		elsif(wd < -5.0)
-			issues << :issue_plumpier
-		end
+		w = report.insane_weight?
+		issues << :issue_skinnier if w == :skinnier
+		issues << :issue_plumpier if w == :plumpier
+		issues << :issue_too_light if w == :too_light
+		issues << :issue_too_fat if w == :too_fat
 
 		# check for shitty months
-		# (persistant diarrhea)
-		if(report.diarrhea)
-			if(reports.first.diarrhea)
-				issues << :issue_shitty
-			end
-		end
+		# (persistent diarrhea)
+		issues << :issue_shitty if report.persistent_diarrhea?
 
 		return issues	
 	end
@@ -275,18 +255,16 @@ class Columbawawi < SMS::App
 		msg.respond assemble(:mal_sev, [@rep[:uid].humanize]) if m == :severe
 		msg.respond assemble(:mal_mod, [@rep[:uid].humanize]) if m == :moderate
 		
-		# TODO: fix #issues, and re-enable these alerts
 		
 		# send alerts if data seems unreasonable
 		# or if there are alarming trends
-#		alerts = issues(child)
-#		if(alerts)
-#			alerts.each do |alert|
-#				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
-#			end
-#		end
+		alerts = issues(r)
+		if(alerts)
+			alerts.each do |alert|
+				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
+			end
+		end
 	end
-	
 
 	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
 	def cancel(msg, str)
