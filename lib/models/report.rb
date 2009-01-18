@@ -104,7 +104,8 @@ class Report
 	def self.insane_muac?(muac, age)
 		return nil unless (age && muac)
 		# TODO check that child is older than 6mo TODAY
-		return :too_young unless age > 6 	# only check if older than 6mo
+		# only check if older than 6mo
+		return :too_young unless age > 6 
 		return :too_small if muac < 6.0
 		return false
 	end
@@ -124,8 +125,8 @@ class Report
 		return nil if ph.nil?
 
 		# check for wild changes in height since last time
-		return :taller if ((ph -h ) < 0.0)
-		return :shorter if ((ph - h) > 2.0)
+		return :taller if ((ph - h) < -3.0)
+		return :shorter if ((ph - h) > 3.0)
 		return false
 	end
 
@@ -136,6 +137,7 @@ class Report
 	end
 
 	def self.insane_weight?(w, pw)
+		# check for ridiculous weight
 		return :too_light if w < 2.0
 		return :too_heavy if w > 100.0
 
@@ -170,7 +172,8 @@ class Report
 	end
 
 	def previous
-		self.class.first('child.id' => self.child.id, :order => [:id.desc], :id.lt => self.id)
+		self.class.first('child.id' => self.child.id, :order => [:id.desc],\
+				:id.lt => self.id, :date.lt => 2.weeks.ago )
 	end
 
 	# Returns _true_ if this report indicates a moderately malnourished
