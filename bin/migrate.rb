@@ -11,7 +11,22 @@ unless STDIN.gets =~ /^y/
 end
 
 here = File.dirname(__FILE__)
-require "#{here}/../lib/models.rb"
+#require "#{here}/../lib/models.rb"
+
+# import datamapper
+require "rubygems"
+require "dm-core"
+require "dm-types"
+DataMapper.setup(:default, {:host => "localhost", :adapter => "mysql",\
+				:database => "columbawawi",\
+				:username => "unicef", :password => "m3p3m3p3"})
+# import models
+require "#{here}/../lib/models/reporter.rb"
+require "#{here}/../lib/models/raw_message.rb"
+require "#{here}/../lib/models/district.rb"
+require "#{here}/../lib/models/gmc.rb"
+require "#{here}/../lib/models/child.rb"
+require "#{here}/../lib/models/report.rb"
 DataMapper.auto_migrate!
 
 # create the pilot districts and gmcs
