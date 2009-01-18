@@ -4,8 +4,14 @@
 
 # import local dependancies
 here = File.dirname(__FILE__)
-require "#{here}/../models.rb"
+#require "#{here}/../models.rb"
 
+require "#{here}/../models/reporter.rb"
+require "#{here}/../models/raw_message.rb"
+require "#{here}/../models/district.rb"
+require "#{here}/../models/gmc.rb"
+require "#{here}/../models/child.rb"
+require "#{here}/../models/report.rb"
 
 # monkey patch the incoming message class, to
 # add a slot to temporarily store a RawMessage
