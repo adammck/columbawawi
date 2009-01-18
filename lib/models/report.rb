@@ -115,13 +115,15 @@ class Report
 		self.class.insane_muac?(m, a)
 	end
 
-	def self.insane_height?(h, ph=nil)
+	def self.insane_height?(h, ph)
 		# check for ridiculous height
 		return :too_tall if h > 100.0
 		return :too_short if h < 10.0
 
+		# can't tell if no height last time
+		return nil if ph.nil?
+
 		# check for wild changes in height since last time
-		return false if ph.nil?
 		return :taller if ((ph -h ) < 0.0)
 		return :shorter if ((ph - h) > 2.0)
 		return false
@@ -133,13 +135,14 @@ class Report
 		self.class.insane_height?(height, previous_height)
 	end
 
-	def self.insane_weight?(w, pw=nil)
+	def self.insane_weight?(w, pw)
 		return :too_light if w < 2.0
 		return :too_heavy if w > 100.0
 
-		# check for wild changes in weight since last time
-		return false if self.previous.nil?
+		# can't tell if no weight last time
 		return nil if pw.nil?
+
+		# check for wild changes in weight since last time
 		return :lighter if ((pw - w) > 3.0)
 		return :heavier if ((pw - w) < -3.0)
 		return false
@@ -152,11 +155,16 @@ class Report
 	end
 
 	def persistent_diarrhea?
+
+		# give up if nil last time
 		return nil if self.previous.nil?
 		pd = self.previous.attribute_get(:diarrhea)
 		return nil if pd.nil?
+
+		# give up if nil this time
 		d = attribute_get(:diarrhea)
 		return nil if d.nil?
+
 		return true if (pd && d)
 		return false
 	end

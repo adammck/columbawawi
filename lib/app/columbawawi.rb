@@ -103,7 +103,7 @@ class Columbawawi < SMS::App
 	# by comparing childs past data
 	def issues(report)
 
-		# gather insanities
+		# gather insanities and turn into :issue_insanity
 		issues = (report.insanities.collect do  |insanity| 
 			("issue_" + insanity.to_s).to_sym if insanity
 		end).compact
