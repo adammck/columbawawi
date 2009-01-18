@@ -108,7 +108,7 @@ describe Columbawawi do
 			# was created in the right place
 			g = Gmc.first(:uid => "1234")
 			c = g.children.first(:uid => "70")
-			r = c.reports.first
+			r = c.reports.last
 			
 			# and all of the fields are correct
 			r.weight.should == 35.1
@@ -116,6 +116,27 @@ describe Columbawawi do
 			r.muac.should == 6.5
 			r.oedema.should == false
 			r.diarrhea.should == false
+		end
+		
+		it "responds with warning for malnourished children" do
+			
+			# TODO: fewe easy tests, more edge cases
+			
+			Report.malnourished?(49, 5.0).should == false
+			Report.malnourished?(49, 3.0).should == false
+			Report.malnourished?(49, 2.5).should == :moderate
+			Report.malnourished?(49, 1.0).should == :severe
+			
+			Report.malnourished?(61, 6.0).should == false
+			Report.malnourished?(61, 4.8).should == false
+			Report.malnourished?(61, 4.5).should == :moderate
+			Report.malnourished?(61, 4.2).should == :severe
+			Report.malnourished?(61, 3.9).should == :severe
+			
+			Report.malnourished?(80, 12).should == false
+			Report.malnourished?(80, 10).should == false
+			Report.malnourished?(80,  8).should == :moderate
+			Report.malnourished?(80,  7).should == :severe
 		end
 	end
 end
