@@ -17,6 +17,14 @@ db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
 DataMapper.setup(:default, "sqlite3:///#{db_dir}/test.db")
 DataMapper.auto_migrate!
 
+# create the example district and gmc, as
+# shown on the cheat-sheets and posters
+Gmc.create(
+	:uid => 1234,
+	:title => "Example GMC",
+	:district => District.create(
+		:title => "Example District"))
+
 
 
 
@@ -77,9 +85,10 @@ describe Columbawawi do
 		it "accepts the cheat-sheet example" do
 			Columbawawi.test("new 1234 70 M 21 09555123").should =~ /thank you for registering/i
 			
-			# check that the Child
-			# object was created
-			c = Child.get("123470")
+			# check that the Gmc and
+			# Child objects were created
+			g = Gmc.first(:uid => "1234")
+			c = g.children.first(:uid => "70")
 			c.gender.should == :male
 			c.contact.should == "09555123"
 			
@@ -95,14 +104,39 @@ describe Columbawawi do
 		it "accepts the cheat-sheet example" do
 			Columbawawi.test("report 1234 70 35.1 25.4 6.5 N N").should =~ /thank you for reporting/i
 			
-			# check that the Report
-			# object was created
-			r = Report.first(:uid => "123470")
+			# check that the Report object
+			# was created in the right place
+			g = Gmc.first(:uid => "1234")
+			c = g.children.first(:uid => "70")
+			r = c.reports.last
+			
+			# and all of the fields are correct
 			r.weight.should == 35.1
 			r.height.should == 25.4
 			r.muac.should == 6.5
 			r.oedema.should == false
 			r.diarrhea.should == false
+		end
+		
+		it "responds with warning for malnourished children" do
+			
+			# TODO: fewe easy tests, more edge cases
+			
+			Report.malnourished?(49, 5.0).should == false
+			Report.malnourished?(49, 3.0).should == false
+			Report.malnourished?(49, 2.5).should == :moderate
+			Report.malnourished?(49, 1.0).should == :severe
+			
+			Report.malnourished?(61, 6.0).should == false
+			Report.malnourished?(61, 4.8).should == false
+			Report.malnourished?(61, 4.5).should == :moderate
+			Report.malnourished?(61, 4.2).should == :severe
+			Report.malnourished?(61, 3.9).should == :severe
+			
+			Report.malnourished?(80, 12).should == false
+			Report.malnourished?(80, 10).should == false
+			Report.malnourished?(80,  8).should == :moderate
+			Report.malnourished?(80,  7).should == :severe
 		end
 	end
 end

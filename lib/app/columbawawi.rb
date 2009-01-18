@@ -44,7 +44,7 @@ class Columbawawi < SMS::App
 		:help_remove => "To remove a child:\ndied [gmc#] [child#]\nor: quit [gmc#] [child#]",
 		
 		:thanks_new => "Thank you for registering Child ",
-		:thanks_report => "Thank you for reporting on Child ",
+		:thanks_report => "Thank you for reporting on Child %s",
 		:thanks_replace => "Thank you for replacing Child %s.",
 		:thanks_remove => "Thank you for removing Child %s.",
 
@@ -52,8 +52,8 @@ class Columbawawi < SMS::App
 		:canceled_report => "Report sent at ", 
 		:canceled => " has been canceled.",
 
-		:mal_mod     => " is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
-		:mal_sev     => " has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10% sugar immediately.",
+		:mal_mod     => "Child %s is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
+		:mal_sev     => "Child %s has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10%% sugar immediately.",
 
 		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
 		:issue_gogogadget=> " seems to be much taller than last month. Please recheck the height measurement.",
@@ -220,7 +220,7 @@ class Columbawawi < SMS::App
 			:uid=>child_uid,
 			:age=>data[:age],
 			:gender=>data[:gender],
-			:contact=>data[:phone])
+			:contact=>data[:contact])
 		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
@@ -247,7 +247,7 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc)
+			return msg.respond assemble(:invalid_gmc, [gmc_uid])
 		end
 		
 		# same for the child
@@ -282,27 +282,26 @@ class Columbawawi < SMS::App
 		# including all tokens that we parsed,
 		# and the w/h ratio, if available
 		suffix = (summary != "") ? ": #{summary}" : ""
-		#suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
-		msg.respond assemble(:thanks_report, "#{@rep[:uid].humanize}#{suffix}")
+		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
+		msg.respond(assemble(:thanks_report, [summarize(@rep)]))
 		
 		# send advice to the sender if the
 		# child appears to be severely or
 		# moderately malnourished
-		if r.severe?
-			msg.respond assemble(:child, "#{@rep[:uid].humanize}", :mal_sev)
-			
-		elsif r.moderate?
-			msg.respond assemble(:child, "#{@rep[:uid].humanize}", :mal_mod)
-		end
+		m = r.malnourished?
+		msg.respond assemble(:mal_sev, [@rep[:uid].humanize]) if m == :severe
+		msg.respond assemble(:mal_mod, [@rep[:uid].humanize]) if m == :moderate
+		
+		# TODO: fix #issues, and re-enable these alerts
 		
 		# send alerts if data seems unreasonable
 		# or if there are alarming trends
-		alerts = issues(child)
-		if(alerts)
-			alerts.each do |alert|
-				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
-			end
-		end
+#		alerts = issues(child)
+#		if(alerts)
+#			alerts.each do |alert|
+#				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
+#			end
+#		end
 	end
 	
 
