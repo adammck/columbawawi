@@ -2,7 +2,7 @@
 # vim: noet
 
 
-# import local dependancies
+# import local dependencies
 here = File.dirname(__FILE__)
 
 # import datamapper
@@ -135,7 +135,7 @@ class Columbawawi < SMS::App
 		# dont check for historical trends
 		# if there are no other reports
 		# to compare
-		return issues unless reports
+		return issues unless reports.empty?
 
 		# compare this months height to last months
 		hd = reports.first.height - report.height
