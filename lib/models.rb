@@ -7,9 +7,11 @@ require "dm-core"
 require "dm-types"
 
 # configure the dev database
-db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
-DataMapper.setup(:default, "sqlite3:///#{db_dir}/dev.db")
-
+#db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
+#DataMapper.setup(:default, "sqlite3:///#{db_dir}/dev.db")
+DataMapper.setup(:default, {:host => "localhost", :adapter => "mysql",\
+				:database => "columbawawi",\
+				:username => "unicef", :password => "m3p3m3p3"})
 
 class Reporter
 	include DataMapper::Resource
