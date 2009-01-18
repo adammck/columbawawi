@@ -38,19 +38,19 @@ class Columbawawi < SMS::App
 		:mal_mod     => "Child %s is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
 		:mal_sev     => "Child %s has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10%% sugar immediately.",
 
-		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
-		:issue_gogogadget=> " seems to be much taller than last month. Please recheck the height measurement.",
-		:issue_too_tall => " seems to be very tall. Please recheck height measurement.",
-		:issue_too_short => " seems to be very short. Please recheck height measurement.",
+		:issue_shorter=> "Child %s seems to be much shorter than last month. Please recheck the height measurement.",
+		:issue_taller=> "Child %s seems to be much taller than last month. Please recheck the height measurement.",
+		:issue_too_tall => "Child %s seems to be very tall. Please recheck height measurement.",
+		:issue_too_short => "Child %s seems to be very short. Please recheck height measurement.",
 
-		:issue_skinnier => " seems to have lost more than 3kg since last month. Please recheck the weight measurement.",
-		:issue_plumpier => " seems to have gained more than 3kg since last month. Please recheck the weight measurement.",
-		:issue_too_light => " seems to be very light. Please recheck weight measurement.",
-		:issue_too_fat => " seems to be very heavy. Please recheck weight measurement.",
+		:issue_lighter => "Child %s seems to have lost more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_heavier => "Child %s seems to have gained more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_too_light => "Child %s seems to be very light. Please recheck weight measurement.",
+		:issue_too_heavy => "Child %s seems to be very heavy. Please recheck weight measurement.",
 
-		:issue_pencil => " seems to have a very small MUAC. Please recheck the MUAC measurement.",
-		:issue_too_young => " is too young for MUAC measurements. Only collect MUAC if child is older than 6 months.",
-		:issue_shitty => " also had diarrhea last month. Please refer the child to a clinician.",
+		:issue_too_small=> "Child %s seems to have a very small MUAC. Please recheck the MUAC measurement.",
+		:issue_too_young => "Child %s is too young for MUAC measurements. Only collect MUAC if child is older than 6 months.",
+		:issue_diarrhea=> "Child %s also had diarrhea last month. Please refer the child to a clinician.",
 	}
 	
 	
@@ -102,30 +102,15 @@ class Columbawawi < SMS::App
 	# trends and also sanity check data points 
 	# by comparing childs past data
 	def issues(report)
-		# a place to put issues, since
-		# there can be several
-		issues = []
 
-		# check that MUAC is reasonable
-		m = report.insane_muac?
-		issues << :issue_pencil if m == :too_small
-		issues << :issue_too_young if m == :too_young
-
-		h = report.insane_height?
-		issues << :issue_gogogadget if h == :gogogadget
-		issues << :issue_shrinkage if h == :shrinkage
-		issues << :issue_too_tall if h == :too_tall
-		issues << :issue_too_short if h == :too_short
-
-		w = report.insane_weight?
-		issues << :issue_skinnier if w == :skinnier
-		issues << :issue_plumpier if w == :plumpier
-		issues << :issue_too_light if w == :too_light
-		issues << :issue_too_fat if w == :too_fat
+		# gather insanities
+		issues = (report.insanities.collect do  |insanity| 
+			("issue_" + insanity.to_s).to_sym if insanity
+		end).compact
 
 		# check for shitty months
 		# (persistent diarrhea)
-		issues << :issue_shitty if report.persistent_diarrhea?
+		issues << :issue_diarrhea if report.persistent_diarrhea?
 
 		return issues	
 	end
@@ -261,7 +246,7 @@ class Columbawawi < SMS::App
 		alerts = issues(r)
 		if(alerts)
 			alerts.each do |alert|
-				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
+				msg.respond assemble(alert, [@rep[:uid].humanize])
 			end
 		end
 	end

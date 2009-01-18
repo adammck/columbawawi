@@ -96,7 +96,11 @@ class Report
 			return :moderate
 		end
 	end
-	
+
+	def insanities
+		return [insane_muac?, insane_height?, insane_weight?].compact
+	end
+
 	def self.insane_muac?(muac, age)
 		return nil unless (age && muac)
 		# TODO check that child is older than 6mo TODAY
@@ -111,33 +115,40 @@ class Report
 		self.class.insane_muac?(m, a)
 	end
 
-	def insane_height?
+	def self.insane_height?(h, ph=nil)
 		# check for ridiculous height
-		h = attribute_get(:height)
 		return :too_tall if h > 100.0
 		return :too_short if h < 10.0
 
 		# check for wild changes in height since last time
-		return nil if self.previous.nil?
-		ph = self.previous.attribute_get(:height)
-		return nil if ph.nil?
-		return :gogogadget if ((ph -h ) < 0.0)
-		return :shrinkage if ((ph - h) > 2.0)
+		return false if ph.nil?
+		return :taller if ((ph -h ) < 0.0)
+		return :shorter if ((ph - h) > 2.0)
+		return false
+	end
+
+	def insane_height?
+		height = attribute_get(:height)
+		previous_height = self.previous.attribute_get(:height)
+		self.class.insane_height?(height, previous_height)
+	end
+
+	def self.insane_weight?(w, pw=nil)
+		return :too_light if w < 2.0
+		return :too_heavy if w > 100.0
+
+		# check for wild changes in weight since last time
+		return false if self.previous.nil?
+		return nil if pw.nil?
+		return :lighter if ((pw - w) > 3.0)
+		return :heavier if ((pw - w) < -3.0)
 		return false
 	end
 
 	def insane_weight?
-		w = attribute_get(:weight)
-		return :too_light if w < 2.0
-		return :too_fat if w > 100.0
-
-		# check for wild changes in weight since last time
-		return nil if self.previous.nil?
-		pw = self.previous.attribute_get(:weight)
-		return nil if pw.nil?
-		return :skinnier if ((pw - w) > 3.0)
-		return :plumpier if ((pw - w) < -3.0)
-		return false
+		weight = attribute_get(:weight)
+		previous_weight = self.previous.attribute_get(:weight)
+		self.class.insane_weight?(weight, previous_weight)
 	end
 
 	def persistent_diarrhea?
