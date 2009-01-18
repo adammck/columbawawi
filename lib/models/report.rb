@@ -4,6 +4,7 @@ class Report
 	belongs_to :child
 	
 	property :id, Integer, :serial=>true
+	property :cancelled, ParanoidBoolean
 	
 	property :weight, Float 
 	property :height, Float 
@@ -13,16 +14,58 @@ class Report
 	property :date, DateTime
 	# TODO issue flag
 	
-	# Returns the weight to height ratio of
-	# this report, or nil, if either fields
-	# are missing.
-	# TODO calculate this properly
-	def ratio
-		w = attribute_get(:weight)
-		h = attribute_get(:height)
-		(w && h) ? sprintf("%.2f", w/h).to_f : nil
+	def self.ratio(height, weight)
+		
+		# round the height and weight to the nearest 0.5 (in a bizarro fasion,
+		# since Numeric#round only works to the nearest integer), since that is
+		# the best fidelity of the lookup table from NCHS/CDD/WHO
+		height = ((height * 2).round.to_f / 2)
+		weight = ((weight * 2).round.to_f / 2)
+		
+		# find the average weight for this height, and
+		# return the ratio of THIS WEIGHT to the average
+		$ratios.each do |h, w|
+			return((weight / w) * 100)\
+				if height == h
+		end
+		
+		# no return yet = unknown ratio
+		# don't guess, just return nil
+		return nil
 	end
-
+	
+	def self.malnourished?(height, weight)
+		r = ratio(height, weight)
+		
+		return nil       if r.nil? # unknown
+		return false     if r > 80 # healthy
+		return :moderate if r > 70 # moderate wasting
+		return :severe             # severe wasting
+	end
+	
+	# Returns the ratio of the child's weight to
+	# the average weight for a child of this height
+	def ratio
+		h = attribute_get(:height)
+		w = attribute_get(:weight)
+		return nil unless (h && w)
+		
+		# get ratio, abort if nil, or
+		# crop to two decimal places
+		r = self.class.ratio(h, w)
+		return nil if r.nil?
+		sprintf("%.2f", r).to_f
+	end
+	
+	# TODO: document this complicated process
+	
+	def malnourished?
+		h = attribute_get(:height)
+		w = attribute_get(:weight)
+		return nil unless (h && w)
+		self.class.malnourished?(h, w)
+	end
+	
 	# Returns _true_ if this report indicates a moderately malnourished
 	# child. Note that _false_ is returned if we cannot tell (due to the
 	# _ratio_ or _muac_ being nil), the child is severely malnourished,
