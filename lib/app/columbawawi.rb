@@ -29,7 +29,7 @@ class Columbawawi < SMS::App
 		:help_remove => "To remove a child:\ndied [gmc#] [child#]\nor: quit [gmc#] [child#]",
 		
 		:thanks_new => "Thank you for registering Child ",
-		:thanks_report => "Thank you for reporting on Child ",
+		:thanks_report => "Thank you for reporting on Child %s",
 		:thanks_replace => "Thank you for replacing Child %s.",
 		:thanks_remove => "Thank you for removing Child %s.",
 
@@ -205,7 +205,7 @@ class Columbawawi < SMS::App
 			:uid=>child_uid,
 			:age=>data[:age],
 			:gender=>data[:gender],
-			:contact=>data[:phone])
+			:contact=>data[:contact])
 		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
@@ -268,7 +268,7 @@ class Columbawawi < SMS::App
 		# and the w/h ratio, if available
 		suffix = (summary != "") ? ": #{summary}" : ""
 		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
-		msg.respond assemble(:thanks_report, "#{@rep[:uid].humanize}#{suffix}")
+		msg.respond(assemble(:thanks_report, [summarize(@rep)]))
 		
 		# send advice to the sender if the
 		# child appears to be severely or

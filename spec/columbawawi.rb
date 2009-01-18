@@ -17,6 +17,14 @@ db_dir = File.expand_path(File.dirname(__FILE__) + "/../db")
 DataMapper.setup(:default, "sqlite3:///#{db_dir}/test.db")
 DataMapper.auto_migrate!
 
+# create the example district and gmc, as
+# shown on the cheat-sheets and posters
+Gmc.create(
+	:uid => 1234,
+	:title => "Example GMC",
+	:district => District.create(
+		:title => "Example District"))
+
 
 
 
@@ -77,9 +85,10 @@ describe Columbawawi do
 		it "accepts the cheat-sheet example" do
 			Columbawawi.test("new 1234 70 M 21 09555123").should =~ /thank you for registering/i
 			
-			# check that the Child
-			# object was created
-			c = Child.get("123470")
+			# check that the Gmc and
+			# Child objects were created
+			g = Gmc.first(:uid => "1234")
+			c = g.children.first(:uid => "70")
 			c.gender.should == :male
 			c.contact.should == "09555123"
 			
@@ -95,9 +104,13 @@ describe Columbawawi do
 		it "accepts the cheat-sheet example" do
 			Columbawawi.test("report 1234 70 35.1 25.4 6.5 N N").should =~ /thank you for reporting/i
 			
-			# check that the Report
-			# object was created
-			r = Report.first(:uid => "123470")
+			# check that the Report object
+			# was created in the right place
+			g = Gmc.first(:uid => "1234")
+			c = g.children.first(:uid => "70")
+			r = c.reports.first
+			
+			# and all of the fields are correct
 			r.weight.should == 35.1
 			r.height.should == 25.4
 			r.muac.should == 6.5
