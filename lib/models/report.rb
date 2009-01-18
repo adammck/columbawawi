@@ -105,7 +105,7 @@ class Report
 		return nil unless (age && muac)
 		# TODO check that child is older than 6mo TODAY
 		return :too_young unless age > 6 	# only check if older than 6mo
-		return :too_small if muac > 6.0
+		return :too_small if muac < 6.0
 		return false
 	end
 
@@ -170,7 +170,7 @@ class Report
 	end
 
 	def previous
-		self.class.first(:order => [:id.desc], :id.lt => self.id)
+		self.class.first('child.id' => self.child.id, :order => [:id.desc], :id.lt => self.id)
 	end
 
 	# Returns _true_ if this report indicates a moderately malnourished
