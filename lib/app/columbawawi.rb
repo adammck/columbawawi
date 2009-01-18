@@ -4,7 +4,22 @@
 
 # import local dependancies
 here = File.dirname(__FILE__)
-require "#{here}/../models.rb"
+
+# import datamapper
+require "rubygems"
+require "dm-core"
+require "dm-types"
+DataMapper.setup(:default, {:host => "localhost", :adapter => "mysql",\
+				:database => "columbawawi",\
+				:username => "unicef", :password => "m3p3m3p3"})
+
+require "#{here}/../models/reporter.rb"
+require "#{here}/../models/raw_message.rb"
+require "#{here}/../models/district.rb"
+require "#{here}/../models/gmc.rb"
+require "#{here}/../models/child.rb"
+require "#{here}/../models/report.rb"
+
 require "#{here}/../parsers.rb"
 
 # import rubysms, which
@@ -276,7 +291,7 @@ class Columbawawi < SMS::App
 		# including all tokens that we parsed,
 		# and the w/h ratio, if available
 		suffix = (summary != "") ? ": #{summary}" : ""
-		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
+		#suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
 		msg.respond assemble(:thanks_report, "#{@rep[:uid].humanize}#{suffix}")
 		
 		# send advice to the sender if the
