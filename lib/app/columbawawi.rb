@@ -21,14 +21,17 @@ class Columbawawi < SMS::App
 		
 		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.',
 		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
-		:ask_replacement => "This child is already registered.",
+		:ask_replacement => 'Child# %s is already registered at %s. Please reply "%s" or "%s" to confirm replacement.',
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 		:help_cancel => "To cancel a new chld or a child's most recent report:\ncancel [gmc#] [child#]",
-
+		:help_remove => "To remove a child:\ndied [gmc#] [child#]\nor: quit [gmc#] [child#]",
+		
 		:thanks_new => "Thank you for registering Child ",
 		:thanks_report => "Thank you for reporting on Child ",
+		:thanks_replace => "Thank you for replacing Child %s.",
+		:thanks_remove => "Thank you for removing Child %s.",
 
 		:canceled_new => "New ",
 		:canceled_report => "Report sent at ", 
@@ -49,7 +52,12 @@ class Columbawawi < SMS::App
 	def initialize
 		@reg = RegistrationParser.new
 		@rep = ReportParser.new
-		@can = CancelParser.new
+		@can = UidParser.new
+		@gon = UidParser.new
+		
+		# to store new children while we are waiting
+		# for confirmation whether they died or quit
+		@replacement_child = {}
 	end
 
 
@@ -57,11 +65,33 @@ class Columbawawi < SMS::App
 
 	private
 	
-	# Returns a Reporter object for the given phone
-	# number, automatically creating it if necessary.
-	def reporter(phone)
-		Reporter.first_or_create(:phone => phone)
+	
+	# Returns a string containing a summary of
+	# the data matched by a parser object. The
+	# data MUST contain a UID; all other fields
+	# are optional, and appended to the output
+	# in their humaized form, if present.
+	def summarize(parser)
+
+		# the UID is MANDATORY		
+		if parser[:uid].nil?
+			raise ArgumentError
+		end
+		
+		# concatenate all of the fields other
+		# than UID, which always goes first
+		summary = (parser.matches.collect do |m|
+			unless m.token.name == :uid
+				"#{m.token.name}=#{m.humanize}"
+			end
+		end).compact.join(", ")
+		
+		# return the mandatory UID, and if any
+		# fields were summarized, append them
+		suffix = (summary != "") ? ": #{summary}" : ""
+		"#{parser[:uid].humanize}#{suffix}"
 	end
+	
 	
 	# check the childs recent history for alarming
 	# trends and also sanity check data points 
@@ -134,7 +164,7 @@ class Columbawawi < SMS::App
 		
 		# parse the message, and reject
 		# it if no tokens could be found
-		unless data = @reg.parse(str.to_s)
+		unless data = @reg.parse(str.to_s) and data[:uid]
 			return msg.respond assemble(:oops, :help_new)
 		end
 		
@@ -155,7 +185,18 @@ class Columbawawi < SMS::App
 		# is trouble afoot. we must ask what has happened, and
 		# wait for a response
 		if gmc.children.first(:uid => child_uid)
-			return msg.respond assemble(:ask_replacement)
+			died_msg = "DIED #{gmc_uid} #{child_uid}"
+			gone_msg = "QUIT #{gmc_uid} #{child_uid}"
+			
+			# store parser state while we wait for the
+			# confirmation, so we create the replacement
+			# child object when DIED/GONE is received
+			key = "#{gmc_uid}:#{child_uid}"
+			@replacement_child[key] = @reg.dup
+			
+			return msg.respond(
+				assemble( :ask_replacement,
+					[child_uid, gmc.title, died_msg, gone_msg]))
 		end
 		
 		# create the new child in db
@@ -166,19 +207,9 @@ class Columbawawi < SMS::App
 			:gender=>data[:gender],
 			:contact=>data[:phone])
 		
-		# build a string summary containing all
-		# of the normalized data that we just
-		# parsed, as flat key=value pairs
-		summary = (@reg.matches.collect do |m|
-			unless m.token.name == :uid
-				"#{m.token.name}=#{m.humanize}"
-			end
-		end).compact.join(", ")
-		
 		# verify receipt of this registration,
 		# including all tokens that we parsed
-		suffix = (summary != "") ? ": #{summary}" : ""
-		msg.respond assemble(:thanks_new, "#{@reg[:uid].humanize}#{suffix}")
+		msg.respond(assemble(:thanks_new, summarize(@reg)))
 	end
 	
 	
@@ -294,12 +325,86 @@ class Columbawawi < SMS::App
 			report.destroy
 			return msg.respond assemble(:canceled_report,"#{latest}", :child ,"#{@can[:uid].humanize}", :canceled)
 
-		# otherwise destroy the child
+		# otherwise destroy the child by setting
+		# the :cancelled_at property - it's a
+		# paranoid data/time, so datamapper will
+		# pretend that the object doesn't exist
 		else
-			child.destroy
+			child.cancelled_at = Time.now
+			child.save
+			
+			# confirm the cancellation
 			return msg.respond assemble(:canceled_new, :child ,"#{@can[:uid].humanize}", :canceled)
 		end
 	end
+	
+	
+	serve /\A(died|dead|quit)(?:\s+(.+))\Z/i
+	def remove_child(msg, type, str)
+		
+		# fetch or create a reporter object exists
+		# for this caller, to own the new child
+		reporter = Reporter.first_or_create(:phone => msg.sender)
+		
+		# parse the uid tokens from this message (we use fuzz rather than 
+		# a simple regex, to accept a wide range of formatting disasters)
+		unless data = @gon.parse(str.to_s)
+			return msg.respond(assemble(:oops, :help_remove))
+		end
+		
+		# debug messages
+		log "Parsed into: #{data.inspect}"
+		log "Unparsed: #{@gon.unparsed.inspect}", :info\
+			unless @gon.unparsed.empty?
+		
+		# TODO: this service shares a lot of code
+		# with CANCEL. abstract into a private method
+		
+		# split the UIDs back into gmc+child
+		gmc_uid, child_uid = *data.delete(:uid)
+		
+		# fetch the gmc; abort if it wasn't valid
+		unless gmc = Gmc.first(:uid => gmc_uid)
+			return msg.respond assemble(:invalid_gmc)
+		end
+		
+		# same for the child
+		unless child = gmc.children.first(:uid => child_uid)
+			return msg.respond assemble(:invalid_child)
+		end
+		
+		# destroy the child, and if we have a pending
+		# replacement (because NEW was called before
+		# DIED/QUIT to remove the existing child),
+		# re-run that method to create the object
+		m = (type =~ /\Ad/) ? "died" : "gone"
+		child.send("#{m}_at=", Time.now)
+		child.save
+		
+		key = "#{gmc_uid}:#{child_uid}"
+		if @replacement_child.has_key?(key)
+			
+			# create the replacement child in db,
+			# and remove the record from pending
+			rep = @replacement_child.delete(key)
+			sum = rep.summary
+			
+			c = gmc.children.create(
+				:reporter=>reporter,
+				:uid=>child_uid,
+				:age=>sum[:age],
+				:gender=>sum[:gender],
+				:contact=>sum[:phone])
+		
+			# verify receipt of this replacment,
+			# including all tokens that we parsed
+			return msg.respond(assemble(:thanks_replace, [summarize(rep)]))
+		end
+		
+		# no replacement, just thank for the removal
+		return msg.respond(assemble(:thanks_remove, [@gon[:uid].humanize]))
+	end
+	
 	
 	serve /help/
 	def help(msg)

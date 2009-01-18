@@ -20,6 +20,8 @@ class Reporter
 	property :phone, String, :key=>true, :length=>22
 end
 
+# Created by the logger application, to keep track
+# of SMS traffic at the lowest possible level.
 class RawMessage
 	include DataMapper::Resource
 	belongs_to :reporter
@@ -68,9 +70,14 @@ class Child
 	has n, :reports
 	
 	property :id, Integer, :serial=>true
-	property :cancelled, ParanoidBoolean
+	
 	property :uid, String, :key=>true, :format=>/^\d{2}$/, :messages => {
 		:format => "Child ID must be exactly two digits" }
+	
+	# child can be destroyed in a variety of ways
+	property :cancelled_at, ParanoidDateTime
+	property :died_at, ParanoidDateTime
+	property :gone_at, ParanoidDateTime
 	
 	property :age, DateTime
 	property :gender, Enum[:male, :female]
