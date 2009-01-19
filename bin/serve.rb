@@ -17,7 +17,7 @@ DataMapper.setup(:default, $conf[:database])
 
 # load all applications statically, for now
 require "#{here}/../lib/app/columbawawi.rb"
-require "#{here}/../lib/app/logger.rb"
+#require "#{here}/../lib/app/logger.rb"
 
 # at the moment, only the backends
 # are configurable. more to come!

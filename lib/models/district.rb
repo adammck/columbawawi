@@ -6,5 +6,6 @@ class District
 	has n, :gmcs
 	
 	property :id, Integer, :serial=>true
-	property :title, String, :length => 60
+	property :slug, String, :length=>60
+	property :title, String, :length=>60
 end

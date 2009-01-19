@@ -11,5 +11,6 @@ class Gmc
 	property :uid, String, :key=>true, :format=>/^\d{4}$/, :messages => {
 		:format => "GMC UID must be exactly four digits" }
 	
-	property :title, String, :length => 60
+	property :slug, String, :length=>60
+	property :title, String, :length=>60
 end

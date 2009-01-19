@@ -11,18 +11,31 @@
 				<div id="branding">
 					<h1 id="site-name"><a title="Return to the Dashboard" href="/">RapidSMS :: Nutrition Surveilance</a></h1>
 				</div>
-				<div id="user-tools">
-					Useful things go here
+				<div id="pilot-links">
+					Pilot GMCs:
+					<% for gmc in pilot_gmcs %>
+					<a href="/<%= gmc.district.slug %>/<%= gmc.slug %>/"><%= gmc.title %></a>
+					<% end %>
 				</div>
 			</div>
 			<div id="breadcrumbs">
-				<a href="/">Malawi</a> &raquo;
-				<a href="/district">District</a> &raquo;
-				<a href="/district/gmc">GMC</a>
+				<a href="/">Malawi</a>
+				
+				<% if @district %>
+				&raquo; <a href="/<%= @district.slug %>"><%= @district.title %></a>
+
+				<% if @gmc %>
+				&raquo; <a href="/<%= @district.slug %>/<%= @gmc.slug %>"><%= @gmc.title %></a>
+				<% end %>	
+				<% end %>
 			</div>
 			<div id="content">
-				<%#= message[:notice] %>
-				<%= catch_content :for_layout %>
+
+<!-- begin -->
+<%#= message[:notice] %>
+<%= catch_content :for_layout %>
+<!-- end -->
+
 			</div>
 			<div id="footer">
 				RapidSMS Nutrition Surveilance &copy; UNICEF 2009

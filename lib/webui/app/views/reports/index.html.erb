@@ -1,6 +1,0 @@
-<h1>Reports controller, index action</h1>
-
-<% for report in @reports %>
-	Child <%= report.child.uid %> at GMC <%= report.child.gmc.uid %>  <br/> 
-<p>	<%= report.date %>  <%= report.weight %>  <%= report.height %>  <%= report.muac %>  <%= report.oedema %>  <%= report.diarrhea %> </p>
-<% end %>

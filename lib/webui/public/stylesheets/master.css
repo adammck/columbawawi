@@ -72,7 +72,7 @@ a {
 
 	/* align with dark stripe
 	 * of header bg */	
-	#user-tools {
+	#pilot-links {
 		position: absolute;
 		top: 89px;
 		right: 10px;
@@ -80,6 +80,10 @@ a {
 		text-align: right;
 		font-size: 11px;
 	}
+	
+		#pilot-links a {
+			color: #ddf;
+		}
 
 /* page hierachy, in the form
  * COUNTRY -> DISTRICT -> GMC */
@@ -97,6 +101,85 @@ a {
 	background: #fff;
 	border-top: 1px dotted #eef;
 }
+
+	/* generic table styles */
+	
+	#content table {
+		border-collapse: collapse;
+		font-size: 11px;
+	}
+	
+		#content h2,
+		#content caption {
+			background: #74D7E3 url(../png/h2.png) repeat-x;
+			border-bottom: 1px solid #4bd;
+			color: #fff;
+			font-weight: bold;
+			margin: 0;
+			padding: 5px;
+			text-align: left;
+			white-space: nowrap;
+		}
+		
+		#content td,
+		#content th {
+			padding: 5px;
+		}
+		
+		#content th {
+			background: #eee url(../gif/table-header-bg.gif) repeat-x;
+			font-weight: normal;
+			text-align: left;
+			color: #444;
+		}
+		
+		#content td {
+			border-top: 1px solid #ddd; }
+	
+	/* transactions log */
+	#content div.log {
+		margin-top: 10px;
+		width: 60%;
+	}
+	
+		#content td.messages {
+			padding: 0; }
+		
+			/* nested tables in the message log
+			 * (the actual text exchange) are
+			 * tightly wrapped */
+			#content td.messages table td {
+				font-family: monospace;
+				border: 0;
+			}
+
+			#content td.messages table td.dir {
+				font-weight: bold;
+				width: 1%;
+			}
+
+			/* incoming messages */
+			#content tr.in { background: #fff8f8; }
+			#content tr.in  td.dir { color: #f00; }
+
+			/* outgoing messages */
+			#content tr.out { background: #f8fff8; }
+			#content tr.out td.dir { color: #0f0; }
+
+
+	/* anything that is boring, default,
+	 * unknown, not important, etc */
+	#content span.na {
+		color: #ccc;
+	}
+	
+	/* full-page errors, like 404,
+	 * from app/views/exceptions */
+	#content div.exception {
+		border: 10px solid #fee;
+		font-family: monospace;
+		padding: 20px;
+	}
 
 
 /* legal junk */
