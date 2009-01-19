@@ -111,7 +111,7 @@ class Columbawawi < SMS::App
 		# (persistent diarrhea)
 		issues << :issue_diarrhea if report.persistent_diarrhea?
 
-		return issues	
+		return issues unless report.ammendment?
 	end
 	
 	

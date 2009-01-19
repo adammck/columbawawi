@@ -8,7 +8,6 @@
 here = File.dirname(__FILE__)
 require "#{here}/../ratios.rb"
 
-
 class Report
 	include DataMapper::Resource
 	belongs_to :reporter
@@ -97,6 +96,20 @@ class Report
 		end
 	end
 
+	def ammendment?
+		if self.previous.insane?
+			if ((Time.now <=> (self.previous.date + 21600)) == -1) 
+				self.previous.attribute_set(:cancelled => true)
+				return true
+			end
+		end
+	end
+
+	def insane?
+		sane = insanities.delete_if{|i| i == false}.empty? 
+		return true unless sane 
+	end
+
 	def insanities
 		return [insane_muac?, insane_height?, insane_weight?].compact
 	end
@@ -173,7 +186,7 @@ class Report
 
 	def previous
 		self.class.first('child.id' => self.child.id, :order => [:id.desc],\
-				:id.lt => self.id, :date.lt => 2.weeks.ago )
+				:id.lt => self.id, :cancelled => false)
 	end
 
 	# Returns _true_ if this report indicates a moderately malnourished
