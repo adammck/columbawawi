@@ -26,7 +26,7 @@ class Columbawawi < SMS::App
 		:child => "Child ",
 		
 		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.',
-		:invalid_child   => "Sorry, I can't find a child with that child#. If this is a new child, please register before reporting.",
+		:invalid_child   => "Sorry, I can't find a Child# %s. If this is a new child, please register before reporting.",
 		:ask_replacement => 'Child# %s is already registered at %s. Please reply "%s" or "%s" to confirm replacement.',
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
@@ -41,24 +41,25 @@ class Columbawawi < SMS::App
 
 		:canceled_new => "New ",
 		:canceled_report => "Report sent at ", 
-		:canceled => " has been canceled.",
+		:canceled => "Child %s has been canceled.",
 
 		:mal_mod     => "Child %s is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
 		:mal_sev     => "Child %s has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10%% sugar immediately.",
 
-		:issue_shorter=> "Child %s seems to be much shorter than last month. Please recheck the height measurement.",
-		:issue_taller=> "Child %s seems to be much taller than last month. Please recheck the height measurement.",
+		:issue_shorter => "Child %s seems to be much shorter than last time. Please recheck the height measurement.",
+		:issue_taller => "Child %s seems to be much taller than last time. Please recheck the height measurement.",
 		:issue_too_tall => "Child %s seems to be very tall. Please recheck height measurement.",
 		:issue_too_short => "Child %s seems to be very short. Please recheck height measurement.",
 
-		:issue_lighter => "Child %s seems to have lost more than 3kg since last month. Please recheck the weight measurement.",
-		:issue_heavier => "Child %s seems to have gained more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_lighter => "Child %s seems to have lost more than 3kg since last time. Please recheck the weight measurement.",
+		:issue_heavier => "Child %s seems to have gained more than 3kg since last time. Please recheck the weight measurement.",
 		:issue_too_light => "Child %s seems to be very light. Please recheck weight measurement.",
 		:issue_too_heavy => "Child %s seems to be very heavy. Please recheck weight measurement.",
 
-		:issue_too_small=> "Child %s seems to have a very small MUAC. Please recheck the MUAC measurement.",
+		:issue_too_big => "Child %s seems to have a very large MUAC. Please recheck the MUAC measurement.",
+		:issue_too_small => "Child %s seems to have a very small MUAC. Please recheck the MUAC measurement.",
 		:issue_too_young => "Child %s is too young for MUAC measurements. Only collect MUAC if child is older than 6 months.",
-		:issue_diarrhea=> "Child %s also had diarrhea last month. Please refer the child to a clinician.",
+		:issue_diarrhea => "Child %s also had diarrhea last time. Please refer the child to a clinician.",
 	}
 	
 	
@@ -146,7 +147,7 @@ class Columbawawi < SMS::App
 	# trends and also sanity check data points 
 	def issues(report)
 
-		# gather insanities and turn into :issue_insanity
+		# gather insanities and transform into :issue_insanity
 		issues = (report.insanities.collect do  |insanity| 
 			("issue_" + insanity.to_s).to_sym if insanity
 		end).compact
@@ -155,7 +156,7 @@ class Columbawawi < SMS::App
 		# (persistent diarrhea)
 		issues << :issue_diarrhea if report.persistent_diarrhea?
 
-		return issues	
+		return issues 
 	end
 	
 	
@@ -209,7 +210,7 @@ class Columbawawi < SMS::App
 		c = gmc.children.create(
 			:reporter=>reporter,
 			:uid=>child_uid,
-			:age=>data[:age],
+			:birthday=>data[:age],
 			:gender=>data[:gender],
 			:contact=>data[:contact])
 		
@@ -243,7 +244,7 @@ class Columbawawi < SMS::App
 		
 		# same for the child
 		unless child = gmc.children.first(:uid => child_uid)
-			return msg.respond assemble(:invalid_child)
+			return msg.respond assemble(:invalid_child, [@rep[:uid].humanize])
 		end
 		
 		# create and save the new
@@ -292,7 +293,13 @@ class Columbawawi < SMS::App
 				msg.respond assemble(alert, [@rep[:uid].humanize])
 			end
 		end
+
+		# silently cancel previous report if this report
+		# appears to be a replacement
+		r.previous.attribute_set(:cancelled => true) if r.ammend?
+
 	end
+
 
 	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
 	def cancel(msg, str)
@@ -326,7 +333,7 @@ class Columbawawi < SMS::App
 			# TODO 'on' and 'for' should be messages before this is i18n-ed
 			latest = report.date.strftime("%I:%M%p on %m/%d/%Y for ")
 			report.destroy
-			return msg.respond assemble(:canceled_report,"#{latest}", :child ,"#{@can[:uid].humanize}", :canceled)
+			return msg.respond assemble(:canceled_report,"#{latest}", :canceled, [@can[:uid].humanize])
 
 		# otherwise destroy the child by setting
 		# the :cancelled_at property - it's a
@@ -337,7 +344,7 @@ class Columbawawi < SMS::App
 			child.save
 			
 			# confirm the cancellation
-			return msg.respond assemble(:canceled_new, :child ,"#{@can[:uid].humanize}", :canceled)
+			return msg.respond assemble(:canceled_new, :canceled, [@can[:uid].humanize])
 		end
 	end
 	
@@ -395,7 +402,7 @@ class Columbawawi < SMS::App
 			c = gmc.children.create(
 				:reporter=>reporter,
 				:uid=>child_uid,
-				:age=>sum[:age],
+				:birthday=>sum[:age],
 				:gender=>sum[:gender],
 				:contact=>sum[:phone])
 		
