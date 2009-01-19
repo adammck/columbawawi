@@ -16,7 +16,15 @@ class Child
 	property :died_at, ParanoidDateTime
 	property :gone_at, ParanoidDateTime
 
-	property :age, DateTime
+	property :birthday, DateTime
 	property :gender, Enum[:male, :female]
 	property :contact, String, :length=>22
+
+	
+	def age_in_months 
+		dob = attribute_get(:birthday)
+		((DateTime.now.year - dob.year)*12)\
+			+ (DateTime.now.month - dob.month)
+	end
+
 end
