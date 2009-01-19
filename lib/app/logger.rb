@@ -49,13 +49,12 @@ class Logger < SMS::App
 		# if this message was spawned in response to
 		# another, fetch the object, to link them up
 		irt = msg.in_response_to
-		raw_msg = irt ? irt.raw_message : nil
+		obj = irt ? irt.raw_message.children : RawMessage
 		
 		# create and save the log message
-		rm = RawMessage.create(
+		obj.create(
 			:reporter => reporter,
 			:direction => :outgoing,
-			:in_response_to => raw_msg,
 			:text => msg.text,
 			:sent => Time.now)
 	end
