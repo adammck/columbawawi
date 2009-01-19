@@ -46,12 +46,19 @@ class Columbawawi < SMS::App
 		:mal_mod     => "Child %s is moderately malnourished. Please refer to SFP and counsel caregiver on child nutrition.",
 		:mal_sev     => "Child %s has severe acute malnutrition. Please refer to NRU/TFP and administer 50 ml of 10%% sugar immediately.",
 
-		:issue_shrinkage => " seems to be much shorter than last month. Please recheck the height measurement.",
-		:issue_gogogadget=> " seems to be much taller than last month. Please recheck the height measurement.",
-		:issue_skinnier => " seems to have lost more than 5kg since last month. Please recheck the weight measurement.",
-		:issue_plumpier => " seems to have gained more than 5kg since last month. Please recheck the weight measurement.",
-		:issue_pencil => " seems to have a very small MUAC. Please recheck the MUAC measurement.",
-		:issue_shitty => " also had diarrhea last month. Please refer the child to a clinician.",
+		:issue_shorter=> "Child %s seems to be much shorter than last month. Please recheck the height measurement.",
+		:issue_taller=> "Child %s seems to be much taller than last month. Please recheck the height measurement.",
+		:issue_too_tall => "Child %s seems to be very tall. Please recheck height measurement.",
+		:issue_too_short => "Child %s seems to be very short. Please recheck height measurement.",
+
+		:issue_lighter => "Child %s seems to have lost more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_heavier => "Child %s seems to have gained more than 3kg since last month. Please recheck the weight measurement.",
+		:issue_too_light => "Child %s seems to be very light. Please recheck weight measurement.",
+		:issue_too_heavy => "Child %s seems to be very heavy. Please recheck weight measurement.",
+
+		:issue_too_small=> "Child %s seems to have a very small MUAC. Please recheck the MUAC measurement.",
+		:issue_too_young => "Child %s is too young for MUAC measurements. Only collect MUAC if child is older than 6 months.",
+		:issue_diarrhea=> "Child %s also had diarrhea last month. Please refer the child to a clinician.",
 	}
 	
 	
@@ -137,59 +144,16 @@ class Columbawawi < SMS::App
 	
 	# check the childs recent history for alarming
 	# trends and also sanity check data points 
-	# by comparing childs past data
-	def issues(child)
-		# gather all reports most recent to oldest
-		reports = child.reports.all(:order => [:date.desc]) 
+	def issues(report)
 
-		# remove the one just sent in
-		report = reports.shift
-
-		# a place to put issues, since
-		# there can be several
-		issues = []
-
-		# check that MUAC is reasonable
-		if(report.muac < 5.0)
-			issues << :issue_pencil
-		end
-
-		# dont check for historical trends
-		# if there are no other reports
-		# to compare
-		return issues unless reports.empty?
-
-		# compare this months height to last months
-		hd = reports.first.height - report.height
-
-		# go go gadget legs
-		if(hd < 0.0)
-			issues << :issue_gogogadget
-
-		# losing height
-		elsif(hd > 2.0)
-			issues << :issue_shrinkage
-		end
-		
-		# compare this months weight to last months
-		wd = reports.first.weight - report.weight
-
-		# losing weight
-		if(wd > 5.0)
-			issues << :issue_skinnier
-
-		# gaining weight
-		elsif(wd < -5.0)
-			issues << :issue_plumpier
-		end
+		# gather insanities and turn into :issue_insanity
+		issues = (report.insanities.collect do  |insanity| 
+			("issue_" + insanity.to_s).to_sym if insanity
+		end).compact
 
 		# check for shitty months
-		# (persistant diarrhea)
-		if(report.diarrhea)
-			if(reports.first.diarrhea)
-				issues << :issue_shitty
-			end
-		end
+		# (persistent diarrhea)
+		issues << :issue_diarrhea if report.persistent_diarrhea?
 
 		return issues	
 	end
@@ -319,18 +283,16 @@ class Columbawawi < SMS::App
 		msg.respond assemble(:mal_sev, [@rep[:uid].humanize]) if m == :severe
 		msg.respond assemble(:mal_mod, [@rep[:uid].humanize]) if m == :moderate
 		
-		# TODO: fix #issues, and re-enable these alerts
 		
 		# send alerts if data seems unreasonable
 		# or if there are alarming trends
-#		alerts = issues(child)
-#		if(alerts)
-#			alerts.each do |alert|
-#				msg.respond assemble(:child, "#{@rep[:uid].humanize}", alert)
-#			end
-#		end
+		alerts = issues(r)
+		if(alerts)
+			alerts.each do |alert|
+				msg.respond assemble(alert, [@rep[:uid].humanize])
+			end
+		end
 	end
-	
 
 	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
 	def cancel(msg, str)
@@ -362,7 +324,7 @@ class Columbawawi < SMS::App
 		if(report = child.reports.first(:order => [:date.desc]))
 
 			# TODO 'on' and 'for' should be messages before this is i18n-ed
-			latest = report.sent.strftime("%I:%M%p on %m/%d/%Y for ")
+			latest = report.date.strftime("%I:%M%p on %m/%d/%Y for ")
 			report.destroy
 			return msg.respond assemble(:canceled_report,"#{latest}", :child ,"#{@can[:uid].humanize}", :canceled)
 
