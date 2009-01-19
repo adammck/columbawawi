@@ -97,8 +97,13 @@ class Report
 		end
 	end
 
+	# Returns an array containing the output of all
+	# insance_*? methods of this instance, excluding
+	# nil and false.
 	def insanities
-		return [insane_muac?, insane_height?, insane_weight?].compact
+		methods.collect do |m|
+			(m =~ /^insane_.+\?$/) && (symbol = send(m)) ? symbol : nil
+		end
 	end
 
 	def self.insane_muac?(muac, age)
