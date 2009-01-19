@@ -14,7 +14,7 @@
 		</thead>
 		<tbody>
 			<% for report in @reports %>
-			<tr>
+			<tr<% if report.cancelled %> class="cancelled"<% end %>>
 				<td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td>
 				<td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td>
 				<td><% if report.child.uid %><%= report.child.uid %><% else %><span class="na">unknown</span><% end %></td>
@@ -22,6 +22,9 @@
 				<td><% unless report.send(field).nil? %><%= report.send(field) %><% else %><span class="na" title="This field was not reported">?</span><% end %></td>
 				<% end %>
 				<td><span title="<%= time_ago_in_words(report.date) =%> ago"><%= prettier_time(report.date) %></span></td>
+			</tr>
+			<tr>
+				<td colspan="9"><%= begin; report.insanities; rescue Exception; end %></td>
 			</tr>
 			<% end %>
 		</tbody>

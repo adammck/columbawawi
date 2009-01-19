@@ -1,7 +1,7 @@
 class Dashboard < Application
 	
   def index
-    @reports = Report.all(:order => [:date.desc])
+    @reports = Report.all(:order => [:date.desc], :cancelled=>[true, false])
     render :index
   end
   
