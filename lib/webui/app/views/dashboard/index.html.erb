@@ -1,3 +1,30 @@
+<div class="module children">
+	<table>
+		<caption>Children</caption>
+		<thead>
+			<th>District</th>
+			<th><abbr title="Growth Monitoring Center">GMC</abbr></th>
+			<th>Child#</th>
+			<th>Age (months)</th>
+			<th>Gender</th>
+			<th>Contact</th>
+		</thead>
+		<tbody>
+			<% for child in @children %>
+			<tr>
+				<td><a href="/<%= child.gmc.district.slug %>/"><%= child.gmc.district.title %></a></td>
+				<td><a href="/<%= child.gmc.district.slug %>/<%= child.gmc.slug %>/"><span title="GMC# <%= child.gmc.uid %>"><%= child.gmc.title %></span></a></td>
+				<td><%= child.uid %></td>
+				
+				<% for field in [:age_in_months, :gender, :contact] %>
+				<td><% unless child.send(field).nil? %><%= child.send(field) %><% else %><span class="na" title="This field was not reported">?</span><% end %></td>
+				<% end %>
+			</tr>
+			<% end %>
+		</tbody>
+	</table>
+</div>
+
 <div class="module reports">
 	<table>
 		<caption>Today's Reports</caption>
@@ -17,7 +44,7 @@
 			<tr<% if report.cancelled %> class="cancelled"<% end %>>
 				<td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td>
 				<td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td>
-				<td><% if report.child.uid %><%= report.child.uid %><% else %><span class="na">unknown</span><% end %></td>
+				<td><%= report.child.uid %></td>
 				<% for field in [:weight, :height, :muac, :oedema, :diarrhea] %>
 				<td><% unless report.send(field).nil? %><%= report.send(field) %><% else %><span class="na" title="This field was not reported">?</span><% end %></td>
 				<% end %>
