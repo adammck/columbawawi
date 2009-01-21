@@ -8,7 +8,7 @@ require "#{here}/../parsers.rb"
 
 # import rubysms, which
 # is not a ruby gem yet :(
-require "#{here}/../../../rubysms/lib/sms.rb"
+require "#{here}/../../../rubysms/lib/rubysms.rb"
 
 
 # monkey patch the incoming message class, to
@@ -21,7 +21,7 @@ end
 
 class Columbawawi < SMS::App
 	Messages = {
-		:dont_understand => "Sorry, I don't understand. Reply with 'help' for more information.",
+		:dont_understand => 'Sorry, I do not understand "%s"',
 		:oops => "Oops! ",
 		:child => "Child ",
 		
@@ -185,7 +185,7 @@ class Columbawawi < SMS::App
 	
 	public
 	
-	serve /\A(?:new\s*child|new|n|reg|register)(?:\s+(.+))?\Z/i
+	serve /\A(?:new)(?:\s+(.+?)\s*)?(?=new|\Z)/i
 	def register(msg, str)
 		
 		reporter = identify(msg.sender)	
@@ -195,38 +195,38 @@ class Columbawawi < SMS::App
 		unless data = @reg.parse(str.to_s) and data[:uid]
 			return msg.respond assemble(:oops, :help_new)
 		end
-		
+
 		# debug messages
 		log "Parsed into: #{data.inspect}", :info
 		log "Unparsed: #{@reg.unparsed.inspect}", :info\
 			unless @reg.unparsed.empty?
-		
+
 		# split the UIDs back into gmc+child
 		gmc_uid, child_uid = *data.delete(:uid)
-		
+
 		# fetch the gmc object; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
 			return msg.respond assemble(:invalid_gmc, [gmc_uid])
 		end
-		
+
 		# if this child has already been registered, then there
 		# is trouble afoot. we must ask what has happened, and
 		# wait for a response
 		if gmc.children.first(:uid => child_uid)
 			died_msg = "DIED #{gmc_uid} #{child_uid}"
 			gone_msg = "QUIT #{gmc_uid} #{child_uid}"
-			
+	
 			# store parser state while we wait for the
 			# confirmation, so we create the replacement
 			# child object when DIED/GONE is received
 			key = "#{gmc_uid}:#{child_uid}"
 			@replacement_child[key] = @reg.dup
-			
+	
 			return msg.respond(
 				assemble( :ask_replacement,
 					[child_uid, gmc.title, died_msg, gone_msg]))
 		end
-		
+
 		# create the new child in db
 		c = gmc.children.create(
 			:reporter=>reporter,
@@ -234,14 +234,14 @@ class Columbawawi < SMS::App
 			:birthday=>data[:age],
 			:gender=>data[:gender],
 			:contact=>data[:contact])
-		
+
 		# verify receipt of this registration,
 		# including all tokens that we parsed
 		msg.respond(assemble(:thanks_new, summarize(@reg)))
 	end
 	
 	
-	serve /\A(?:report\s*on|report|rep|r)(?:\s+(.+))?\Z/i
+	serve /\A(?:report)(?:\s+(.+?)\s*)?(?=report|\Z)/i
 	def report(msg, str)
 		
 		reporter = identify(msg.sender)
@@ -366,8 +366,9 @@ class Columbawawi < SMS::App
 	end
 
 
-	serve /\A(?:cancel|can|c)(?:\s+(.+))?\Z/i
+	serve /\A(?:cancel)(?:\s+(.+?)\s*)?(?=cancel|\Z)/i
 	def cancel(msg, str)
+		
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @can.parse(str.to_s)
@@ -414,7 +415,7 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\A(died|dead|quit)(?:\s+(.+))\Z/i
+	serve /\A(died|dead|quit)(?:\s+(.+?)\s*)?(?=died|dead|quit|\Z)/i
 	def remove_child(msg, type, str)
 		
 		reporter = identify(msg.sender)	
@@ -479,14 +480,14 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /help/
+	serve /\Ahelp/i
 	def help(msg)
 		msg.respond assemble(:help_new, "\n---\n", :help_report)
 	end
 	
 	
 	serve :anything
-	def anything_else(msg)
-		msg.respond assemble(:dont_understand)
+	def anything_else(msg, str)
+		msg.respond assemble(:dont_understand, [str])
 	end
 end

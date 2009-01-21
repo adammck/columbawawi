@@ -2,17 +2,17 @@
 # vim: noet
 
 $conf = {
-	:backends => {
-		"Zain" => [:gsm, "/dev/ttyUSB0"],
-		"TNM"  => [:gsm, "/dev/ttyUSB0"],
-		"HTTP" => [:http]
-	},
+	:backends => [
+		[:GSM, "Zain", "/dev/ttyUSB0"],
+		[:GSM, "TNM", "/dev/ttyUSB1"],
+		:HTTP
+	],
 	
 	:database => {
 		:adapter => "mysql",
 		:host => "localhost",
-		:database => "columbawawi",
-		:username => "unicef",
-		:password => "m3p3m3p3"
+		:database => "columbawawi-prod",
+		:username => "root",
+		:password => ""
 	}
 }

@@ -111,7 +111,7 @@ a {
 	
 		#content h2,
 		#content caption {
-			background: #74D7E3 url(../png/h2.png) repeat-x;
+			background: #74d7e3 url(../png/h2.png) repeat-x;
 			border-bottom: 1px solid #4bd;
 			color: #fff;
 			font-weight: bold;
@@ -120,6 +120,13 @@ a {
 			text-align: left;
 			white-space: nowrap;
 		}
+		
+			/* additional, less important info can
+			 * be wrapped in a span to dullify it */
+			#content caption span {
+				color: #e3f7f9;
+				font-size: 80%;
+			}
 		
 		#content td,
 		#content th {
