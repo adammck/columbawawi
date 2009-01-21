@@ -39,7 +39,11 @@ $conf[:backends].each do |be_conf|
 	# (so multiple backends of the same class
 	# are labelled EXAMPLE:1, EXAMPLE:2, etc)
 	unless label
-		index = seen.count(:klass)
+		
+		# not using Array#count, because we're
+		# deploying on ruby 1.8.6 on ubuntu :|
+		index = 0
+		seen.each { |item| index += 1 if item == klass }
 		label = "#{klass.to_s.scan(/[a-z]+\Z/i)[0]}:#{index}"
 	end
 	
