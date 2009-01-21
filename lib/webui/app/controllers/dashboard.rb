@@ -10,6 +10,7 @@ class Dashboard < Application
   	fetch_district
   	
   	@reports = Report.all("child.gmc.district.id" => @district.id)
+  	@children = Child.all("gmc.district.id" => @district.id)
   	render :index
   end
   
@@ -18,6 +19,7 @@ class Dashboard < Application
   	fetch_gmc
   	
   	@reports = Report.all("child.gmc.id" => @gmc.id)
+  	@children = Child.all("gmc.id" => @gmc.id)
   	render :index
   end
   
