@@ -40,7 +40,7 @@ $conf[:backends].each do |be_conf|
 	# are labelled EXAMPLE:1, EXAMPLE:2, etc)
 	unless label
 		index = seen.count(:klass)
-		label = "#{klass.to_s}:#{index}"
+		label = "#{klass.to_s.scan(/[a-z]+\Z/i)[0]}:#{index}"
 	end
 	
 	inst.label = label
