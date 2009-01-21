@@ -2,11 +2,11 @@
 # vim: noet
 
 $conf = {
-	:backends => {
-		"Zain" => [:gsm, "/dev/ttyUSB0"],
-		"TNM"  => [:gsm, "/dev/ttyUSB0"],
-		"HTTP" => [:http]
-	},
+	:backends => [
+		[:GSM, "Zain", "/dev/ttyUSB0"],
+		[:GSM, "TNM", "/dev/ttyUSB1"],
+		:HTTP
+	]
 	
 	:database => {
 		:adapter => "mysql",

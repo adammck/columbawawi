@@ -2,10 +2,8 @@
 # vim: noet
 
 $conf = {
-	:backends => {
-		"HTTP" => [:http],
-		"DRB"  => [:drb]
-	},
+	:backends =>\
+		[:HTTP, :DRB],
 	
 	:database => {
 		:adapter => "mysql",
