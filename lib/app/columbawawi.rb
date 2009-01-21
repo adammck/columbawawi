@@ -21,7 +21,7 @@ end
 
 class Columbawawi < SMS::App
 	Messages = {
-		:dont_understand => "Sorry, I don't understand.",
+		:dont_understand => "Sorry, I don't understand. Reply with 'help' for more information.",
 		:oops => "Oops! ",
 		:child => "Child ",
 		
@@ -68,7 +68,8 @@ class Columbawawi < SMS::App
 		@rep = ReportParser.new
 		@can = UidParser.new
 		@gon = UidParser.new
-		
+		@sur = UidParser.new
+
 		# to store new children while we are waiting
 		# for confirmation whether they died or quit
 		@replacement_child = {}
@@ -76,8 +77,7 @@ class Columbawawi < SMS::App
 	
 	
 	def incoming(msg)
-		reporter = Reporter.first_or_create(
-			:phone => msg.sender) 
+		reporter = identify(msg.sender)
 
 		# create and save the log message
 		# before even inspecting it, to be
@@ -96,8 +96,7 @@ class Columbawawi < SMS::App
 	end
 	
 	def outgoing(msg)
-		reporter = Reporter.first_or_create(
-			:phone => msg.recipient)
+		reporter = identify(msg.recipient)
 		
 		# if this message was spawned in response to
 		# another, fetch the object, to link them up
@@ -159,16 +158,38 @@ class Columbawawi < SMS::App
 		return issues 
 	end
 	
+
+	# finds or creates a reporter from a number
+	def identify(number)
+
+		# determine source of caller
+		# TODO: handle new gain network once it exists
+		if number.length == 4
+			backend = :http
+		elsif number[0..1] == "09"
+			backend = :zain
+		else
+			backend = :tnm
+		end
+
+		# fetch or create a reporter object exists for
+		# this caller, to own any objects that we create
+		reporter = Reporter.first_or_create(:phone => number)
+
+		# set backend in separate step so a backend
+		# will be added to existing reporters
+		reporter.update_attributes(:backend => backend) unless reporter.backend
+
+		return reporter
+	end
 	
 	public
 	
 	serve /\A(?:new\s*child|new|n|reg|register)(?:\s+(.+))?\Z/i
 	def register(msg, str)
 		
-		# fetch or create a reporter object exists for
-		# this caller, to own any objects that we create
-		reporter = Reporter.first_or_create(:phone => msg.sender)
-		
+		reporter = identify(msg.sender)	
+
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str.to_s) and data[:uid]
@@ -223,6 +244,8 @@ class Columbawawi < SMS::App
 	serve /\A(?:report\s*on|report|rep|r)(?:\s+(.+))?\Z/i
 	def report(msg, str)
 		
+		reporter = identify(msg.sender)
+
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @rep.parse(str)
@@ -251,6 +274,7 @@ class Columbawawi < SMS::App
 		# report in the database
 		r = child.reports.create(
 			
+			:reporter => reporter,
 			# reported fields (some may be nil,
 			# which is okay). TODO: should be
 			# able to just pass the data hash
@@ -261,6 +285,7 @@ class Columbawawi < SMS::App
 			:diarrhea => data[:diarrhea],
 			:date => msg.sent)
 		
+
 		# build a string summary containing all
 		# of the normalized data that we just
 		# parsed, as flat key=value pairs
@@ -298,6 +323,46 @@ class Columbawawi < SMS::App
 		# appears to be a replacement
 		r.previous.attribute_set(:cancelled => true) if r.ammend?
 
+	end
+
+
+	serve /\A(?:survey|sur|s)\s+(\d{4}\s+\d{2})\s+([\*\d\s]+)\Z/i
+	def survey(msg, uid, str) 
+		# parse the message, and reject
+		# it if no tokens could be found
+		unless data = @sur.parse(uid.to_s)
+			return msg.respond assemble(:oops, :help_survey)
+		end
+		
+		# debug message
+		log "Parsed into: #{data.inspect}", :info
+		log "Unparsed: #{@sur.unparsed.inspect}", :info\
+			unless @sur.unparsed.empty?
+		
+		# split the UIDs back into gmc+child
+		gmc_uid, child_uid = *data.delete(:uid)
+		
+		# fetch the gmc; abort if it wasn't valid
+		unless gmc = Gmc.first(:uid => gmc_uid)
+			return msg.respond assemble(:invalid_gmc)
+		end
+		
+		# same for the child
+		unless child = gmc.children.first(:uid => child_uid)
+			return msg.respond assemble(:invalid_child)
+		end
+
+		section_names = [" ", "Income sources: ", "Food available: ", "Food consumption patterns: ", "Shocks: ", "Changes in household: "] 
+		sections = str.split("*") 
+		num_questions =  sections.collect{|s| s.split}.flatten.length.to_s 
+		
+		s = child.surveys.create(
+			:reporter => reporter,
+			:date => msg.sent)
+		
+
+
+		(1..5).each{|n| msg.respond assemble(section_names[n] + sections[n].split.inspect)}
 	end
 
 
@@ -352,9 +417,7 @@ class Columbawawi < SMS::App
 	serve /\A(died|dead|quit)(?:\s+(.+))\Z/i
 	def remove_child(msg, type, str)
 		
-		# fetch or create a reporter object exists
-		# for this caller, to own the new child
-		reporter = Reporter.first_or_create(:phone => msg.sender)
+		reporter = identify(msg.sender)	
 		
 		# parse the uid tokens from this message (we use fuzz rather than 
 		# a simple regex, to accept a wide range of formatting disasters)
