@@ -8,4 +8,6 @@ class Reporter
 	
 	property :id, Integer, :serial=>true
 	property :phone, String, :key=>true, :length=>22
+	property :language, Enum[:english, :chichewa]
+	property :backend, Enum[:tnm, :zain, :gain, :http]
 end
