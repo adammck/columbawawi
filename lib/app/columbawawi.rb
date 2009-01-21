@@ -417,7 +417,7 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\Ahelp/
+	serve /\Ahelp/i
 	def help(msg)
 		msg.respond assemble(:help_new, "\n---\n", :help_report)
 	end
