@@ -6,6 +6,7 @@ class Child
 	belongs_to :reporter
 	belongs_to :gmc
 	has n, :reports
+	has n, :surveys
 	
 	property :id, Integer, :serial=>true
 	property :uid, String, :key=>true, :format=>/^\d{2}$/, :messages => {
