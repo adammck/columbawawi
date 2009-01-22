@@ -319,10 +319,10 @@ class Columbawawi < SMS::App
 			end
 		end
 
-		# silently cancel previous report if this report
-		# appears to be a replacement
-		r.previous.attribute_set(:cancelled => true) if r.ammend?
-
+		# silently cancel previous report if this
+		# report appears to be a replacement for it
+		r.previous.attribute_set(:cancelled => true)\
+			if r.looks_like_amendment?
 	end
 
 
