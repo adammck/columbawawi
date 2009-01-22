@@ -24,19 +24,35 @@ class Report
 	property :diarrhea, Boolean
 	property :date, DateTime
 	
-	# insanity check thresholds
+	
+	
+	# values shouldn't change too quickly
 	HEIGHT_CHANGE = 3.0
+	WEIGHT_CHANGE = 3.0
+	
+	# range of sane heights
+	# for young children
 	TOO_TALL = 100.0
 	TOO_SHORT = 10.0
 
-	WEIGHT_CHANGE = 3.0
+	# same for weights
 	TOO_HEAVY = 100.0
 	TOO_LIGHT = 5.0
 
+	# and MUACs
 	TOO_SMALL = 6.0
 	TOO_BIG = 30.0
 
+
+
+
+	# Given a height (in cm) and a weight (in kg), returns the
+	# weight as a percentage of the average for children of this height.
 	def self.ratio(height, weight)
+	
+		# abort if either of the
+		# arguments are unknown
+		return nil if height.nil? or weight.nil?
 		
 		# round the height and weight to the nearest 0.5 (in a bizarro fasion,
 		# since Numeric#round only works to the nearest integer), since that is
@@ -56,7 +72,57 @@ class Report
 		return nil
 	end
 	
+	
+	# Given a height and (optionally) previous height, returns
+	# a symbol indicating a problem with the value(s), nil if
+	# we cannot be sure (due to lack of data), or false if
+	# nothing seems to be wrong.
+	def self.height_is_insane?(h, ph=nil)
+		
+		# check for ridiculous height
+		return :too_tall if h > TOO_TALL 
+		return :too_short if h < TOO_SHORT
 
+		# can't check change limits if no
+		# previous height report is available
+		return nil if ph.nil?
+
+		# check for wild changes in height since last time
+		return :taller if ((ph - h) < -HEIGHT_CHANGE)
+		return :shorter if ((ph - h) > HEIGHT_CHANGE)
+		
+		# nothing appears
+		# to be wrong!
+		false
+	end
+
+
+	# Same behaviour as _Report.height_is_insane?_
+	# for values (current and previous) of _weight_.
+	def self.weight_is_insane?(w, pw=nil)
+		
+		# check for ridiculous weights
+		return :too_light if w < TOO_LIGHT
+		return :too_heavy if w > TOO_HEAVY
+
+		# can't check change limits if no
+		# previous weight report is available
+		return nil if pw.nil?
+
+		# check for wild changes in weight since last time
+		return :lighter if ((pw - w) > WEIGHT_CHANGE)
+		return :heavier if ((pw - w) < -WEIGHT_CHANGE)
+		
+		# nothing appears
+		# to be wrong!
+		false
+	end
+	
+	
+	# Returns :moderate or :severe to indicate whether a child
+	# appears to be malnourished, given their height (in cm)
+	# and weight (in kg). Returns false if the child appears
+	# to be healthy, or nil if we cannot be sure either way.
 	def self.malnourished_by_ratio?(height, weight)
 		r = ratio(height, weight)
 		
@@ -66,7 +132,55 @@ class Report
 		return :severe             # severe wasting
 	end
 	
+	
+	# Returns :moderate or :severe to indicate whether a child
+	# appears to be malnourished, given their middle-upper-arm-
+	# circumference (MUAC) and age. Returns false if the child
+	# appears healthy, or nil if we cannot be sure either way.
+	def self.malnourished_by_muac?(muac, age)
+		r = muac_is_insane?(muac, age)
+		
+		return nil       if r.nil?      # uknown
+		return false     if muac > 11.9 # healthy
+		return :moderate if muac > 11.0 # moderate wasting
+		return :severe                  # severe wasting
+	end
+	
+	
+	# Returns a symbol indicating any problem with the given
+	# MUAC and age, false if nothing is wrong, or nil if we
+	# cannot know either way.
+	def self.muac_is_insane?(muac, months_old)
+		return nil unless (muac && months_old)
 
+		# the MUAC check isn't applicable for
+		# children younger than six months
+		return :too_young unless months_old > 6 
+
+		# check for ridiculous MUAC s
+		return :too_small if muac < TOO_SMALL
+		return :too_big   if muac > TOO_BIG
+		
+		# no problems
+		return false
+	end
+	
+	
+	
+
+	# Returns the report created previous to this
+	# instane, by date, which was not cancelled
+	def previous
+		self.class.first(
+			"child.id" => self.child.id,
+			:order => [:date.desc],
+			:date.lt => self.date,
+			:cancelled => false)
+	end
+	
+
+
+	
 	# Returns the ratio of the child's weight to
 	# the average weight for a child of this height
 	def ratio
@@ -79,175 +193,144 @@ class Report
 		r = self.class.ratio(h, w)
 		return nil if r.nil?
 		sprintf("%.2f", r).to_f
-	end
-	
-
-	def self.malnourished_by_muac?(muac, age)
-		return nil if self.insane_muac?(muac, age)
-		return false if muac > 11.9 	# healthy
-		return :moderate if muac > 11.0 
-		return :severe
-	end
-
-
-	# TODO: document this complicated process
-	
-	def malnourished?
-		# if there is oedema, return severe
-		o = attribute_get(:oedema)
-		return :severe if o == true
-
-		# analyze muac
-		a = self.child.age_in_months
-		m = attribute_get(:muac)
-		mal_muac = self.class.malnourished_by_muac?(m, a) unless m.nil?
-
-		# analyze ratio
-		h = attribute_get(:height)
-		w = attribute_get(:weight)
-		mal_ratio = self.class.malnourished_by_ratio?(h, w)
-		
-		# return the most serious level of malnutrition
-		if(mal_muac == :severe || mal_ratio == :severe)
-			return :severe
-		elsif(mal_muac == :moderate || mal_ratio == :moderate)
-			return :moderate
-		end
-		return false
-	end
+	end	
 
 
 	# Returns true if new report appears to be 
 	# replacing the previous report
-	def ammend?
-		return nil unless self.previous
-		# TODO six hours is 21600
-		# TODO thirty seconds for development
-		if ((Time.now <=> (self.previous.date + 30)) == -1)
-			return true 
-		end
-		# be greedy if we may be replacing insanity
-		if((Time.now <=> (self.previous.date + 60)) == -1)
-			return true if self.previous.insane?
-		end
-		return false
+	def looks_like_amendment?
+		
+		# abort unless we have a previous report
+		return nil unless previous && previous.date
+		
+		# allow a little longer to replace a report
+		# if it looks like we're fixing insanity
+		time_limit = (previous.insane?) ? 60 : 30
+		(DateTime.now > (self.previous.date + time_limit))
 	end
+	
+	
 
 
+	# Returns true if this report
+	# contains any kind of insanity.
 	def insane?
-		# return true if there is anything left after
-		# throwing away falses and nils
-		sane = insanities.delete_if{|i| i == false}.empty? 
-		return true unless sane 
+		return insanities.empty?
 	end
 
 
+	# Returns and array of symbols, which may be empty,
+	# containing any kinds of insanity reported by the
+	# insane_*? methods of this instance.
 	def insanities
 		methods.collect do |m|
 			(m =~ /^insane_.+\?$/) && (symbol = send(m)) ? symbol : nil
 		end
 	end
+	
+	
 
 
-	def self.insane_muac?(muac, age)
-		return nil unless (age && muac)
-
-		# only check if older than 6mo
-		return :too_young unless age > 6 
-
-		# check for ridiculous MUAC 
-		return :too_small if muac < TOO_SMALL
-		return :too_big if muac > TOO_BIG
-		return false
-	end
-
-
+	# since H/W are almost identical, check
+	# them both via the same private method
+	def insane_height?; sanity_check(:height); end
+	def insane_weight?; sanity_check(:weight); end
+	
+	
+	# Returns a symbol (via _Report.muac_is_insane) indicating
+	# what is wrong, if anything, with this report's MUAC, false
+	# if it appears to be healthy, or nil if we cannot know.
 	def insane_muac?
-		m = attribute_get(:muac)
-		a = self.child.age_in_months
-		self.class.insane_muac?(m, a)
+		
+		# we can't check the muac without it
+		# being reported, and knowing the child's
+		# age (in months), so abort if any are missing.
+		return nil if muac.nil? or self.child.nil?
+		
+		# calculate via the static method
+		age_months = self.child.age_in_months
+		self.class.muac_is_insane?(muac, age_months)
 	end
+	
 
-
-	def self.insane_height?(h, ph=nil)
-		# check for ridiculous height
-		return :too_tall if h > TOO_TALL 
-		return :too_short if h < TOO_SHORT
-
-		# can't tell if no height last time
-		return nil if ph.nil?
-
-		# check for wild changes in height since last time
-		return :taller if ((ph - h) < -HEIGHT_CHANGE)
-		return :shorter if ((ph - h) > HEIGHT_CHANGE)
-		return false
-	end
-
-
-	def insane_height?
-		# check this report's sanity if there is no prior
-		height = attribute_get(:height)
-		self.class.insane_height?(height) unless self.previous
-
-		# check and compare this report unless prior report is insane
-		# (to suppress issue alerts if sane values 
-		# are being compared to insane values)
-		previous_height = self.previous.attribute_get(:height)
-		self.class.insane_height?(height, previous_height)\
-			unless self.previous.class.insane_height?(previous_height)
-	end
-
-
-	def self.insane_weight?(w, pw=nil)
-		# check for ridiculous weight
-		return :too_light if w < TOO_LIGHT
-		return :too_heavy if w > TOO_HEAVY
-
-		# can't tell if no weight last time
-		return nil if pw.nil?
-
-		# check for wild changes in weight since last time
-		return :lighter if ((pw - w) > WEIGHT_CHANGE)
-		return :heavier if ((pw - w) < -WEIGHT_CHANGE)
-		return false
-	end
-
-
-	def insane_weight?
-		# check this report's sanity if there is no prior
-		weight = attribute_get(:weight)
-		self.class.insane_weight?(weight) unless self.previous
-
-		# check and compare this report unless prior report is insane
-		# (to suppress issue alerts if sane values 
-		# are being compared to insane values)
-		previous_weight = self.previous.attribute_get(:weight)
-		self.class.insane_weight?(weight, previous_weight)\
-			unless self.previous.class.insane_weight?(previous_weight)
-	end
-
-
+	# Returns true if this report, and the previously
+	# filed report, both indicate the child has diarrhea.
 	def persistent_diarrhea?
 
-		# give up if nil last time
-		return nil if self.previous.nil?
-		pd = self.previous.attribute_get(:diarrhea)
+		# abort (unknown) unless we have the
+		# info on the last report's diarrhea
+		return nil if previous.nil?
+		pd = previous.diarrhea
 		return nil if pd.nil?
 
-		# give up if nil this time
-		d = attribute_get(:diarrhea)
-		return nil if d.nil?
+		# diarrhea last time AND this
+		# time makes for a shitty time
+		(pd && diarrhea)
+	end
+	
+	
+	# Returns :severe or :moderate if this report appears
+	# to indicate malnutrition, or false if it does not.
+	def malnourished?
+		mal = []
+		
+		# oedema always indicates
+		# severe malnutrtion
+		return :severe if oedema
 
-		# return true if shitty both
-		# this month and last 
-		return true if (pd && d)
-		return false
+		# check the MUAC for malnutrition,
+		# if it (and the age) is available
+		if muac && child
+			mal.push(self.class.malnourished_by_muac?(
+				muac, child.age_in_months))
+		end
+		
+		# same for height/weight ratio,
+		# if the fields are available
+		if height && weight
+			mal.push(self.class.malnourished_by_ratio?(
+				height, weight))
+		end
+		
+		# return the most severe
+		# degree of malnutrtion
+		[:severe, :moderate].each do |x|
+			return x if mal.include?(x)
+		end
+		
+		# nothing appears to be
+		# wrong with this child
+		false
 	end
 
 
-	def previous
-		# return report's child's previous noncanceled report
-		self.class.first('child.id' => self.child.id, :order => [:date.desc],\
-				:date.lt => self.date, :cancelled => false)
+	
+	
+	private
+	
+	def sanity_check(sym)
+		judge = self.class.method("#{sym}_is_insane?")
+		
+		# abort if no current value
+		# is available for this report
+		curr_val = self.send(sym)
+		return nil if curr_val.nil?
+		
+		# if a prior report is available, then we
+		# will compare its value to the updaated value
+		if self.previous && (prev = self.previous.send(sym))
+
+			# if previous value was insane; return unknown,
+			# to suppress alerts from comparing a current
+			# sane height to a previously insane value
+			if judge.call(prev); nil
+			
+			# previous value was sane, so return the
+			# classes judgement of this report's value
+			else; judge.call(curr_val, prev); end
+		
+		# no prior report available; just
+		# check this report for insanity
+		else; judge.call(curr_val); end
 	end
 end

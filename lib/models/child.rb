@@ -20,12 +20,14 @@ class Child
 	property :birthday, DateTime
 	property :gender, Enum[:male, :female]
 	property :contact, String, :length=>22
-
 	
-	def age_in_months 
-		dob = attribute_get(:birthday)
-		((DateTime.now.year - dob.year)*12)\
-			+ (DateTime.now.month - dob.month)
+	# Returns the age of this child, in
+	# months, based on their birthday.
+	def age_in_months
+		return nil unless birthday
+		n = DateTime.now
+		
+		((n.year - birthday.year) * 12) +\
+			(n.month - birthday.month)
 	end
-
 end
