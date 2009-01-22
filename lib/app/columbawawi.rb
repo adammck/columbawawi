@@ -182,7 +182,7 @@ class Columbawawi < SMS::App
 		
 		# find the reporter object and
 		# update with the new name
-		r = identify(msg.sender)
+		r = identify(msg)
 		r.name = name
 		r.save
 		
