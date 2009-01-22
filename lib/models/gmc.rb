@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 # vim: noet
 
+require "rubygems"
+require "json"
+
 class Gmc
 	include DataMapper::Resource
 	belongs_to :reporter
@@ -13,4 +16,24 @@ class Gmc
 	
 	property :slug, String, :length=>60
 	property :title, String, :length=>60
+	
+	# coordinates for mapping
+	property :latitude, Float
+	property :longitude, Float
+	
+	# Returns true if this Gmc
+	# has both geo-coordinates.
+	def coords?
+		latitude && longitude
+	end
+	
+	def to_json
+		{
+			:id => id,
+			:slug => slug,
+			:title => title,
+			:latitude => latitude,
+			:longitude => longitude
+		}.to_json
+	end
 end

@@ -36,12 +36,41 @@ DataMapper.auto_migrate!
 
 
 # create the pilot districts and gmcs
-Gmc.create(:district => District.create(:title => "Kasungu", :slug => "kasungu"), :uid => 1001, :slug => "tamani",  :title => "Tamani")
-Gmc.create(:district => District.create(:title => "Salima",  :slug => "salima"),  :uid => 1101, :slug => "chipoka", :title => "Chipoka")
-Gmc.create(:district => District.create(:title => "Dedza",   :slug => "dedza"),   :uid => 1201, :slug => "chikuse", :title => "Chikuse")
+# with (very) aproximate geo-coords
+
+Gmc.create(
+	:uid => 1001,
+	:slug => "tamani",
+	:title => "Tamani",
+	:latitude => -16.963389,
+	:longitude => 31.759613,
+	:district => District.create(
+		:title => "Kasungu",
+		:slug => "kasungu"))
+
+Gmc.create(
+	:uid => 1101,
+	:slug => "chipoka",
+	:title => "Chipoka",
+	:latitude => -12.963389,
+	:longitude => 32.759613,
+	:district => District.create(
+		:title => "Salima",
+		:slug => "salima"))
+
+Gmc.create(
+	:uid => 1201,
+	:slug => "chikuse",
+	:title => "Chikuse",
+	:latitude => -13.963389,
+	:longitude => 33.759613,
+	:district => District.create(
+		:title => "Dedza",
+		:slug => "dedza"))
 
 # create the example district and gmc, as
 # shown on the cheat-sheets and posters
+
 Gmc.create(
 	:uid => 1234,
 	:title => "Example GMC",
