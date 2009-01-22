@@ -38,6 +38,7 @@ class Columbawawi < SMS::App
 		
 		:thanks_new => "Thank you for registering Child ",
 		:thanks_report => "Thank you for reporting on Child %s",
+		:thanks_survey=> "Thank you for surveying the household of Child %s",
 		:thanks_replace => "Thank you for replacing Child %s.",
 		:thanks_remove => "Thank you for removing Child %s.",
 
@@ -291,11 +292,13 @@ class Columbawawi < SMS::App
 			:date => msg.sent)
 		
 
+		# append ratio to the summary
 		r.ratio.nil? ? ratio = "" : ratio = ", w/h%=#{r.ratio}"
 		msg.respond(assemble(:thanks_report, [summarize(@rep) + ratio]))
 		
+		# send notice of missing data
 		@rep.misses.empty? ? missing = "" : missing = @rep.misses.collect{|m| m.title} * ', '
-		msg.respond(assemble(:missing_data, missing, [@rep[:uid].humanize] )) unless @rep.misses.empty?
+		msg.respond(assemble(:missing_data, missing, [@rep[:uid].humanize])) unless @rep.misses.empty?
 
 		# send advice to the sender if the
 		# child appears to be severely or
@@ -375,8 +378,10 @@ class Columbawawi < SMS::App
 		# arrays start with 0 while mysql starts with 1
 		answers.each_with_index do |a,i| Entry.create(	
 			:date => msg.sent,
-			:answer => Answer.get(((i+1) * (a.to_i+1)))
+			:answer => Answer.get((i+1) * (a.to_i+1))
 		)end
+
+		msg.respond(assemble(:thanks_survey, [@sur[:uid].humanize]))
 
 		# counter as we return confirmation
 		answer_num = 0
