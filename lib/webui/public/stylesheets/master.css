@@ -20,7 +20,7 @@ a {
 }
 
 	a:hover {
-		background: #ffe; }
+		text-decoration: underline; }
 		
 
 #container {
@@ -143,22 +143,36 @@ a {
 		
 		#content td {
 			border-top: 1px solid #ddd; }
+		
+			/* links in table data are usually to drill-down
+			 * into related objects, so don't highlight them.
+			 * TODO: is this really a good idea? */
+			#content td a {
+				color: #000; }
 	
 	
 	/* today's reports */
 	
-	/* a report which was marked as insane
-	 * (the following row lists insanities) */
-	#content .reports tr.insane td {
-		background: #fee;
+	/* a report which was cancelled can be displayed,
+	 * but warnings are ignored (because that's probably
+	 * why it was cancelled) */
+	#content .reports tr.cancelled td,
+	#content .reports tr.cancelled td a {
+		text-decoration: line-through;
+		color: #aaa;
 	}
 	
-	#content div.reports tr.insanities td {
+	/* a report marked with WARNINGS
+	  * (the following row lists them) */
+	#content .reports tr.has_warnings td {
+		background: #fee; }
+	
+	/* the flat list of warnings */
+	#content .reports tr.warnings td {
 		background: #fee;
 		text-align: center;
-		border-top-color: #fcc;
-		color: #f88;
-	}
+		border-top-color: #fdd;
+		color: #f88; }
 	
 	
 	/* transactions log */

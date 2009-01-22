@@ -321,7 +321,7 @@ class Columbawawi < SMS::App
 
 		# silently cancel previous report if this
 		# report appears to be a replacement for it
-		r.previous.attribute_set(:cancelled => true)\
+		r.previous.cancelled = true\
 			if r.looks_like_amendment?
 	end
 

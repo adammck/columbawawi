@@ -15,7 +15,7 @@ class Report
 	belongs_to :child
 	
 	property :id, Integer, :serial=>true
-	property :cancelled, ParanoidBoolean
+	property :cancelled, Boolean
 	
 	property :weight, Float 
 	property :height, Float 
@@ -214,10 +214,7 @@ class Report
 
 	# Returns true if this report
 	# contains any kind of insanity.
-	def insane?
-		not insanities.empty?
-	end
-
+	def insane?; not insanities.empty?; end
 
 	# Returns and array of symbols, which may be empty,
 	# containing any kinds of insanity reported by the
@@ -226,6 +223,27 @@ class Report
 		(methods.collect do |m|
 			(m =~ /^insane_.+\?$/) && (symbol = send(m)) ? symbol : nil
 		end).compact
+	end
+	
+	
+	# Return true if this report contains
+	# any insanity or other red flags.
+	def warnings?; not warnings.empty?; end
+	
+	# Returns the intersection of insanities, persistant
+	# diarrhea and malnutrition, to list together (most
+	# likely in the webui or other report)
+	def warnings
+		w = insanities
+		
+		w << :persistent_diarrhea\
+			if persistent_diarrhea?
+		
+		m = malnourished?
+		w << "#{m}_malnurition".to_sym\
+			if m.is_a? Symbol
+		
+		w
 	end
 	
 	

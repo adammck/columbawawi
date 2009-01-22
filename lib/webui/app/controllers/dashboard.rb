@@ -2,7 +2,7 @@ class Dashboard < Application
 	
   def index
     @data_from = "all GMCs"
-    @reports = Report.all(:order => [:date.desc], :cancelled=>[true, false])
+    @reports = Report.all(:order => [:date.desc])
     @children = Child.all(:order => [:id.desc])
     render :index
   end
