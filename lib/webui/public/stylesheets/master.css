@@ -20,7 +20,7 @@ a {
 }
 
 	a:hover {
-		background: #ffe; }
+		text-decoration: underline; }
 		
 
 #container {
@@ -102,6 +102,7 @@ a {
 	border-top: 1px dotted #eef;
 }
 
+
 	/* generic table styles */
 	
 	#content table {
@@ -142,6 +143,37 @@ a {
 		
 		#content td {
 			border-top: 1px solid #ddd; }
+		
+			/* links in table data are usually to drill-down
+			 * into related objects, so don't highlight them.
+			 * TODO: is this really a good idea? */
+			#content td a {
+				color: #000; }
+	
+	
+	/* today's reports */
+	
+	/* a report which was cancelled can be displayed,
+	 * but warnings are ignored (because that's probably
+	 * why it was cancelled) */
+	#content .reports tr.cancelled td,
+	#content .reports tr.cancelled td a {
+		text-decoration: line-through;
+		color: #aaa;
+	}
+	
+	/* a report marked with WARNINGS
+	  * (the following row lists them) */
+	#content .reports tr.has_warnings td {
+		background: #fee; }
+	
+	/* the flat list of warnings */
+	#content .reports tr.warnings td {
+		background: #fee;
+		text-align: center;
+		border-top-color: #fdd;
+		color: #f88; }
+	
 	
 	/* transactions log */
 	#content div.log {
