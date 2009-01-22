@@ -328,6 +328,9 @@ class Columbawawi < SMS::App
 
 	serve /\A(?:survey|sur|s)\s+(\d{4}\s+\d{2})\s+([\*\d\s]+)\Z/i
 	def survey(msg, uid, str) 
+
+		reporter = identify(msg.sender)	
+
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @sur.parse(uid.to_s)
@@ -353,16 +356,38 @@ class Columbawawi < SMS::App
 		end
 
 		section_names = [" ", "Income sources: ", "Food available: ", "Food consumption patterns: ", "Shocks: ", "Changes in household: "] 
+
+		# break up captured string into sections by *
+		# (the strings leading space means that the first
+		# section is blank, hence the blank element in
+		# section_names above)
 		sections = str.split("*") 
-		num_questions =  sections.collect{|s| s.split}.flatten.length.to_s 
+
+		# split each section string into an array by spaces
+		answers =  sections.collect{|s| s.split}.flatten
+		num_answers = answers.length
 		
 		s = child.surveys.create(
 			:reporter => reporter,
 			:date => msg.sent)
 		
+		# each question has 10 answers in the db,
+		# (once bin/add_questions.rb is run)
+		# so the answer's id can be computed by its
+		# order and content. answer content + 1 times
+		# answer position (aka question) + 1 gives us
+		# the answers id. we have to add 1 because
+		# arrays start with 0 while mysql starts with 1
+		answers.each_with_index do |a,i| Entry.create(	
+			:date => msg.sent,
+			:answer => Answer.get(((i+1) * (a.to_i+1)))
+		)end
 
+		# counter as we return confirmation
+		answer_num = 0
 
-		(1..5).each{|n| msg.respond assemble(section_names[n] + sections[n].split.inspect)}
+		# return one message per section confirming question number and answer pairs
+		(1..5).each{|n| msg.respond assemble(section_names[n] + sections[n].split.collect{|s| "Q" + (answer_num = answer_num + 1).to_s + ". " + s } * ", ")}
 	end
 
 
