@@ -29,6 +29,7 @@ class Columbawawi < SMS::App
 		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.',
 		:invalid_child   => "Sorry, I can't find a Child# %s. If this is a new child, please register before reporting.",
 		:ask_replacement => 'Child# %s is already registered at %s. Please reply "%s" or "%s" to confirm replacement.',
+		:missing_data => 'Report for Child %s is missing data for ',
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
@@ -290,9 +291,12 @@ class Columbawawi < SMS::App
 			:date => msg.sent)
 		
 
-		ratio = ", w/h%=#{r.ratio}" unless r.ratio.nil?
+		r.ratio.nil? ? ratio = "" : ratio = ", w/h%=#{r.ratio}"
 		msg.respond(assemble(:thanks_report, [summarize(@rep) + ratio]))
 		
+		@rep.misses.empty? ? missing = "" : missing = @rep.misses.collect{|m| m.title} * ', '
+		msg.respond(assemble(:missing_data, missing, [@rep[:uid].humanize] )) unless @rep.misses.empty?
+
 		# send advice to the sender if the
 		# child appears to be severely or
 		# moderately malnourished
