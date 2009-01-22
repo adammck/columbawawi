@@ -277,21 +277,8 @@ class Columbawawi < SMS::App
 			:date => msg.sent)
 		
 
-		# build a string summary containing all
-		# of the normalized data that we just
-		# parsed, as flat key=value pairs
-		summary = (@rep.matches.collect do |m|
-			unless m.token.name == :uid
-				"#{m.token.name}=#{m.humanize}"
-			end
-		end).compact.join(", ")
-		
-		# verify receipt of this registration,
-		# including all tokens that we parsed,
-		# and the w/h ratio, if available
-		suffix = (summary != "") ? ": #{summary}" : ""
-		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
-		msg.respond(assemble(:thanks_report, [summarize(@rep)]))
+		ratio = ", w/h%=#{r.ratio}" unless r.ratio.nil?
+		msg.respond(assemble(:thanks_report, [summarize(@rep) + ratio]))
 		
 		# send advice to the sender if the
 		# child appears to be severely or
