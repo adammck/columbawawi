@@ -193,7 +193,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @reg.parse(str.to_s) and data[:uid]
-			return msg.respond assemble(:oops, :help_new)
+			return msg.respond(assemble(:oops, :help_new))
 		end
 
 		# debug messages
@@ -206,7 +206,7 @@ class Columbawawi < SMS::App
 
 		# fetch the gmc object; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc, [gmc_uid])
+			return msg.respond(assemble(:invalid_gmc, [gmc_uid]))
 		end
 
 		# if this child has already been registered, then there
@@ -249,7 +249,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @rep.parse(str)
-			return msg.respond assemble(:oops, :help_report)
+			return msg.respond(assemble(:oops, :help_report))
 		end
 		
 		# debug message
@@ -262,12 +262,12 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc, [gmc_uid])
+			return msg.respond(assemble(:invalid_gmc, [gmc_uid]))
 		end
 		
 		# same for the child
 		unless child = gmc.children.first(:uid => child_uid)
-			return msg.respond assemble(:invalid_child, [@rep[:uid].humanize])
+			return msg.respond(assemble(:invalid_child, [@rep[:uid].humanize]))
 		end
 		
 		# create and save the new
@@ -306,8 +306,8 @@ class Columbawawi < SMS::App
 		# child appears to be severely or
 		# moderately malnourished
 		m = r.malnourished?
-		msg.respond assemble(:mal_sev, [@rep[:uid].humanize]) if m == :severe
-		msg.respond assemble(:mal_mod, [@rep[:uid].humanize]) if m == :moderate
+		msg.respond(assemble(:mal_sev, [@rep[:uid].humanize])) if m == :severe
+		msg.respond(assemble(:mal_mod, [@rep[:uid].humanize])) if m == :moderate
 		
 		
 		# send alerts if data seems unreasonable
@@ -315,7 +315,7 @@ class Columbawawi < SMS::App
 		alerts = issues(r)
 		if(alerts)
 			alerts.each do |alert|
-				msg.respond assemble(alert, [@rep[:uid].humanize])
+				msg.respond(assemble(alert, [@rep[:uid].humanize]))
 			end
 		end
 
@@ -327,11 +327,12 @@ class Columbawawi < SMS::App
 
 
 	serve /\A(?:survey|sur|s)\s+(\d{4}\s+\d{2})\s+([\*\d\s]+)\Z/i
-	def survey(msg, uid, str) 
+	def survey(msg, uid, str)
+		
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @sur.parse(uid.to_s)
-			return msg.respond assemble(:oops, :help_survey)
+			return msg.respond(assemble(:oops, :help_survey))
 		end
 		
 		# debug message
@@ -344,12 +345,12 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc)
+			return msg.respond(assemble(:invalid_gmc))
 		end
 		
 		# same for the child
 		unless child = gmc.children.first(:uid => child_uid)
-			return msg.respond assemble(:invalid_child)
+			return msg.respond(assemble(:invalid_child))
 		end
 
 		section_names = [" ", "Income sources: ", "Food available: ", "Food consumption patterns: ", "Shocks: ", "Changes in household: "] 
@@ -362,7 +363,7 @@ class Columbawawi < SMS::App
 		
 
 
-		(1..5).each{|n| msg.respond assemble(section_names[n] + sections[n].split.inspect)}
+		(1..5).each{|n| msg.respond(assemble(section_names[n] + sections[n].split.inspect)})
 	end
 
 
@@ -372,7 +373,7 @@ class Columbawawi < SMS::App
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @can.parse(str.to_s)
-			return msg.respond assemble(:oops, :help_cancel)
+			return msg.respond(assemble(:oops, :help_cancel))
 		end
 		
 		# debug message
@@ -385,12 +386,12 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc)
+			return msg.respond(assemble(:invalid_gmc))
 		end
 		
 		# same for the child
 		unless child = gmc.children.first(:uid => child_uid)
-			return msg.respond assemble(:invalid_child)
+			return msg.respond(assemble(:invalid_child))
 		end
 
 		# try to find the child's most recent report and destroy it
@@ -399,7 +400,7 @@ class Columbawawi < SMS::App
 			# TODO 'on' and 'for' should be messages before this is i18n-ed
 			latest = report.date.strftime("%I:%M%p on %m/%d/%Y for ")
 			report.destroy
-			return msg.respond assemble(:canceled_report,"#{latest}", :canceled, [@can[:uid].humanize])
+			return msg.respond(assemble(:canceled_report,"#{latest}", :canceled, [@can[:uid].humanize]))
 
 		# otherwise destroy the child by setting
 		# the :cancelled_at property - it's a
@@ -410,7 +411,7 @@ class Columbawawi < SMS::App
 			child.save
 			
 			# confirm the cancellation
-			return msg.respond assemble(:canceled_new, :canceled, [@can[:uid].humanize])
+			return msg.respond(assemble(:canceled_new, :canceled, [@can[:uid].humanize]))
 		end
 	end
 	
@@ -439,12 +440,12 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond assemble(:invalid_gmc)
+			return msg.respond(assemble(:invalid_gmc))
 		end
 		
 		# same for the child
 		unless child = gmc.children.first(:uid => child_uid)
-			return msg.respond assemble(:invalid_child)
+			return msg.respond(assemble(:invalid_child))
 		end
 		
 		# destroy the child, and if we have a pending
@@ -482,12 +483,12 @@ class Columbawawi < SMS::App
 	
 	serve /\Ahelp/i
 	def help(msg)
-		msg.respond assemble(:help_new, "\n---\n", :help_report)
+		msg.respond(assemble(:help_new, "\n---\n", :help_report))
 	end
 	
 	
 	serve :anything
 	def anything_else(msg, str)
-		msg.respond assemble(:dont_understand, [str])
+		msg.respond(assemble(:dont_understand, [str]))
 	end
 end
