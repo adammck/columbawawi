@@ -360,10 +360,10 @@ class Columbawawi < SMS::App
 		s = child.surveys.create(
 			:reporter => reporter,
 			:date => msg.sent)
-		
 
-
-		(1..5).each{|n| msg.respond(assemble(section_names[n] + sections[n].split.inspect)})
+		(1..5).each do |n|
+			msg.respond(assemble(section_names[n] + sections[n].split.inspect))
+		end
 	end
 
 
