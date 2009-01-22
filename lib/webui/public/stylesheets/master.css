@@ -102,6 +102,7 @@ a {
 	border-top: 1px dotted #eef;
 }
 
+
 	/* generic table styles */
 	
 	#content table {
@@ -142,6 +143,23 @@ a {
 		
 		#content td {
 			border-top: 1px solid #ddd; }
+	
+	
+	/* today's reports */
+	
+	/* a report which was marked as insane
+	 * (the following row lists insanities) */
+	#content .reports tr.insane td {
+		background: #fee;
+	}
+	
+	#content div.reports tr.insanities td {
+		background: #fee;
+		text-align: center;
+		border-top-color: #fcc;
+		color: #f88;
+	}
+	
 	
 	/* transactions log */
 	#content div.log {

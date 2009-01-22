@@ -41,7 +41,7 @@
 		</thead>
 		<tbody>
 			<% for report in @reports %>
-			<tr<% if report.cancelled %> class="cancelled"<% end %>>
+			<tr class="<% if report.cancelled %>cancelled<% end %> <% if report.insane? %>insane<% end %>">
 				<td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td>
 				<td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td>
 				<td><%= report.child.uid %></td>
@@ -50,9 +50,14 @@
 				<% end %>
 				<td><span title="<%= time_ago_in_words(report.date) =%> ago"><%= prettier_time(report.date) %></span></td>
 			</tr>
-			<tr>
-				<td colspan="9"><%= begin; report.insanities; rescue Exception; end %></td>
+			
+			<% if report.insane? %>
+			<tr class="insanities<% if report.cancelled %> cancalled<% end %>">
+				<td colspan="9">
+					Warnings: <%= report.insanities.collect { |i| "<strong>" + i.to_s.capitalize.gsub(/_+/, " ") + "</strong>" }.join(", ") %>
+				</td>
 			</tr>
+			<% end %>
 			<% end %>
 		</tbody>
 	</table>
