@@ -215,7 +215,7 @@ class Report
 	# Returns true if this report
 	# contains any kind of insanity.
 	def insane?
-		return insanities.empty?
+		not insanities.empty?
 	end
 
 
@@ -223,9 +223,9 @@ class Report
 	# containing any kinds of insanity reported by the
 	# insane_*? methods of this instance.
 	def insanities
-		methods.collect do |m|
+		(methods.collect do |m|
 			(m =~ /^insane_.+\?$/) && (symbol = send(m)) ? symbol : nil
-		end
+		end).compact
 	end
 	
 	
