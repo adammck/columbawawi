@@ -116,6 +116,7 @@ a {
 			border-bottom: 1px solid #4bd;
 			color: #fff;
 			font-weight: bold;
+			font-size: 100%;
 			margin: 0;
 			padding: 5px;
 			text-align: left;
@@ -124,7 +125,8 @@ a {
 		
 			/* additional, less important info can
 			 * be wrapped in a span to dullify it */
-			#content caption span {
+			#content caption span,
+			#content h2 span {
 				color: #e3f7f9;
 				font-size: 80%;
 			}
@@ -149,6 +151,11 @@ a {
 			 * TODO: is this really a good idea? */
 			#content td a {
 				color: #000; }
+
+		#content tfoot {
+			text-align: right;
+			color: #aaa;
+		}
 	
 	
 	/* today's reports */
@@ -172,7 +179,21 @@ a {
 		background: #fee;
 		text-align: center;
 		border-top-color: #fdd;
-		color: #f88; }
+		color: #f88;
+	}
+	
+	
+	/* google maps */
+	
+	#map {
+		width: 100%;
+		height: 500px;
+		background: #fee; }
+	
+	/* added by javascript if the
+	 * googlemaps script failed */
+	#map .exception {
+		height: 440px; }
 	
 	
 	/* transactions log */
@@ -215,7 +236,7 @@ a {
 	/* full-page errors, like 404,
 	 * from app/views/exceptions */
 	#content div.exception {
-		border: 10px solid #fee;
+		border: 10px solid #fdd;
 		font-family: monospace;
 		padding: 20px;
 	}

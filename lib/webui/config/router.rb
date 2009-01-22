@@ -27,20 +27,20 @@
 
 Merb.logger.info("Compiling routes...")
 Merb::Router.prepare do
-  
-  # Adds the required routes for merb-auth using the password slice
-  slice(:merb_auth_slice_password, :name_prefix => nil, :path_prefix => "")
-
-  # This is the default route for /:controller/:action/:id
-  # This is fine for most cases.  If you're heavily using resource-based
-  # routes, you may want to comment/remove this line to prevent
-  # clients from calling your create or destroy actions with a GET
-  #default_routes
-  
   match("/messages/").to(:controller => :messages, :action => :index)
   
-  # Change this for your home page to be available at /
-  match("/").to(:controller => :dashboard, :action => :index)
-  match("/:district/").to(:controller => :dashboard, :action => :district)
-  match("/:district/:gmc/").to(:controller => :dashboard, :action => :gmc)
+  # maps for each scope (global/district/gmc); matched before the
+  # other views to avoid confusing "map" with a gmc or district
+  match("/:district/:gmc/map").to(:controller => :gmc_app, :action => :map)
+  match("/:district/map"     ).to(:controller => :district_app, :action => :map)
+  match("/map"               ).to(:controller => :global_app, :action => :map)
+  
+  # provides an overview of what's happening in each scope
+  match("/:district/:gmc/").to(:controller => :gmc_app, :action => :index)
+  match("/:district/"     ).to(:controller => :district_app, :action => :index)
+  match("/"               ).to(:controller => :global_app, :action => :index)
+  
+  # returns a list of gmcs as json data for each scope
+  match("/:district/gmc.json").to(:controller => :district_app, :action => :all_gmc)
+  match("/gmc.json"          ).to(:controller => :global_app, :action => :all_gmc)
 end

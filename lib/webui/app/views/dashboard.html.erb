@@ -1,0 +1,74 @@
+<div class="module children">
+	<table>
+		<caption>Children<span> from <%= @data_from %></span></caption>
+		<thead>
+			<th>District</th>
+			<th><abbr title="Growth Monitoring Center">GMC</abbr></th>
+			<th>Child#</th>
+			<th>Age (months)</th>
+			<th>Gender</th>
+			<th>Contact</th>
+		</thead>
+		<tbody>
+			<% for child in @children %>
+			<tr>
+				<td><a href="/<%= child.gmc.district.slug %>/"><%= child.gmc.district.title %></a></td>
+				<td><a href="/<%= child.gmc.district.slug %>/<%= child.gmc.slug %>/"><span title="GMC# <%= child.gmc.uid %>"><%= child.gmc.title %></span></a></td>
+				<td><%= child.uid %></td>
+				
+				<% for field in [:age_in_months, :gender, :contact] %>
+				<td><% unless child.send(field).nil? %><%= child.send(field) %><% else %><span class="na" title="This field was not reported">?</span><% end %></td>
+				<% end %>
+			</tr>
+			<% end %>
+		</tbody>
+	</table>
+</div>
+
+<div class="module reports">
+	<table>
+		<caption>Today's Reports<span> from <%= @data_from %></span></caption>
+		<thead>
+			<th>District</th>
+			<th><abbr title="Growth Monitoring Center">GMC</abbr></th>
+			<th>Reporter</th>
+			<th>Child#</th>
+			<th>Weight</th>
+			<th>Height</th>
+			<th><abbr title="Mid-Upper Arm Circumference">MUAC</abbr></th>
+			<th>Oedema?</th>
+			<th>Diarrhea?</th>
+			<th>Received</th>
+		</thead>
+		<tbody>
+			<% for report in @reports %>
+			<tr<% if report.cancelled %> class="cancelled"<% elsif report.warnings? %> class="has_warnings"<% end %>>
+				<td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td>
+				<td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td>
+				<td><span title="<%= report.reporter.detail %>"><%= report.reporter.summary %></span></td>
+				<td><%= report.child.uid %></td>
+				<% for field in [:weight, :height, :muac, :oedema, :diarrhea] %>
+				<td><% unless report.send(field).nil? %><%= report.send(field) %><% else %><span class="na" title="This field was not reported">?</span><% end %></td>
+				<% end %>
+				<td><span title="<%= time_ago_in_words(report.date) =%> ago"><%= prettier_time(report.date) %></span></td>
+			</tr>
+			
+			<% if !report.cancelled && report.warnings? %>
+			<tr class="warnings">
+				<td colspan="10">
+					<%= report.warnings.collect { |i| "<strong>" + i.to_s.capitalize.gsub(/_+/, " ") + "</strong>" }.join(", ") %>
+				</td>
+			</tr>
+			<% end %>
+			<% end %>
+		</tbody>
+		<tfoot>
+			<tr><td colspan="10">
+				<a href="map">Plot these reports on a map</a>
+			</td></tr>
+		</tfoot>
+	</table>
+	<script type="text/javascript">
+		
+	</script>
+</div>

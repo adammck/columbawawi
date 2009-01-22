@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><% for gmc in @gmcs %>
+	<placemark>
+		<name><%= gmc.title %></name><% if gmc.coords? %>
+		<point>
+			<coordinates><%= gmc.latitude %>, <%= gmc.longitude %>, 0</coordinates>
+		</point><% end %>
+	</placemark><% end %>
+</kml>
+

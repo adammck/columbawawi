@@ -1,0 +1,44 @@
+<div class="module map-reports">
+	<h2>Mapped Reports<span> from <%= @data_from %></span></h2>
+	<div id="map"></div>
+</div>
+
+<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAg-8XYORS7v1h_9zDQNMVAhSVA0KX3RHSzNnk6nT8C9kt2staMxR_mIYMiXdrlrK5Te4_By9-iZF1mQ" type="text/javascript"></script>
+<script type="text/javascript">
+		//$(document).load(function () {
+			var container = $("#map");	
+			
+			/* check that google maps
+			 * has loaded correctly */
+			if(typeof(GBrowserIsCompatible) != "undefined") {
+				if (GBrowserIsCompatible()) {
+					
+					/* create the new map, centered on lilongwe */
+					var home = new GLatLng(-13.963389, 33.759613);
+					var map = new GMap2(container[0]);
+					map.setCenter(home, 9);
+			
+					// switch to hybrid mode
+					map.setMapType(map.getMapTypes()[2]);
+					
+					/* fetch the serialized json data
+					 * for each gmc, and add a marker
+					 * on the map for each */
+					$.getJSON("gmc.json", function(data) {
+						$.each(data, function(n, gmc) {
+							var mark = new GMarker(new GLatLng(gmc["latitude"], gmc["longitude"]));
+							map.addOverlay(mark);
+						});
+					});
+				}
+
+				// garbage collection for dumb browsers
+				$(document).unload(GUnload);
+			} else {
+	
+				/* the google maps script couldn't
+				 * load, so display a big error */
+				container.html('<div class="exception">Couldn\'t load Google maps</div>');
+			}
+		//});
+</script>
