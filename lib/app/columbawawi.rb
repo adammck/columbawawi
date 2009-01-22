@@ -78,7 +78,7 @@ class Columbawawi < SMS::App
 	
 	
 	def incoming(msg)
-		reporter = identify(msg.sender)
+		reporter = identify(msg)
 
 		# create and save the log message
 		# before even inspecting it, to be
@@ -97,7 +97,7 @@ class Columbawawi < SMS::App
 	end
 	
 	def outgoing(msg)
-		reporter = identify(msg.recipient)
+		reporter = identify(msg)
 		
 		# if this message was spawned in response to
 		# another, fetch the object, to link them up
@@ -161,25 +161,16 @@ class Columbawawi < SMS::App
 	
 
 	# finds or creates a reporter from a number
-	def identify(number)
+	def identify(msg)
 
-		# determine source of caller
-		# TODO: handle new gain network once it exists
-		if number.length == 4
-			backend = :http
-		elsif number[0..1] == "09"
-			backend = :zain
-		else
-			backend = :tnm
-		end
 
 		# fetch or create a reporter object exists for
 		# this caller, to own any objects that we create
-		reporter = Reporter.first_or_create(:phone => number)
+		reporter = Reporter.first_or_create(:phone => msg.number.to_s)
 
 		# set backend in separate step so a backend
 		# will be added to existing reporters
-		reporter.update_attributes(:backend => backend) unless reporter.backend
+		reporter.update_attributes(:backend => msg.backend.label.to_s) unless reporter.backend
 
 		return reporter
 	end
@@ -201,7 +192,7 @@ class Columbawawi < SMS::App
 	serve /\A(?:new)(?:\s+(.+?)\s*)?(?=new|\Z)/i
 	def register(msg, str)
 		
-		reporter = identify(msg.sender)	
+		reporter = identify(msg)	
 
 		# parse the message, and reject
 		# it if no tokens could be found
@@ -257,7 +248,7 @@ class Columbawawi < SMS::App
 	serve /\A(?:report)(?:\s+(.+?)\s*)?(?=report|\Z)/i
 	def report(msg, str)
 		
-		reporter = identify(msg.sender)
+		reporter = identify(msg)
 
 		# parse the message, and reject
 		# it if no tokens could be found
@@ -340,8 +331,10 @@ class Columbawawi < SMS::App
 
 
 	serve /\A(?:survey|sur|s)\s+(\d{4}\s+\d{2})\s+([\*\d\s]+)\Z/i
-	def survey(msg, uid, str)
-		
+	def survey(msg, uid, str) 
+
+		reporter = identify(msg)	
+
 		# parse the message, and reject
 		# it if no tokens could be found
 		unless data = @sur.parse(uid.to_s)
@@ -367,16 +360,38 @@ class Columbawawi < SMS::App
 		end
 
 		section_names = [" ", "Income sources: ", "Food available: ", "Food consumption patterns: ", "Shocks: ", "Changes in household: "] 
+
+		# break up captured string into sections by *
+		# (the strings leading space means that the first
+		# section is blank, hence the blank element in
+		# section_names above)
 		sections = str.split("*") 
-		num_questions =  sections.collect{|s| s.split}.flatten.length.to_s 
+
+		# split each section string into an array by spaces
+		answers =  sections.collect{|s| s.split}.flatten
+		num_answers = answers.length
 		
 		s = child.surveys.create(
 			:reporter => reporter,
 			:date => msg.sent)
+		
+		# each question has 10 answers in the db,
+		# (once bin/add_questions.rb is run)
+		# so the answer's id can be computed by its
+		# order and content. answer content + 1 times
+		# answer position (aka question) + 1 gives us
+		# the answers id. we have to add 1 because
+		# arrays start with 0 while mysql starts with 1
+		answers.each_with_index do |a,i| Entry.create(	
+			:date => msg.sent,
+			:answer => Answer.get(((i+1) * (a.to_i+1)))
+		)end
 
-		(1..5).each do |n|
-			msg.respond(assemble(section_names[n] + sections[n].split.inspect))
-		end
+		# counter as we return confirmation
+		answer_num = 0
+
+		# return one message per section confirming question number and answer pairs
+		(1..5).each{|n| msg.respond assemble(section_names[n] + sections[n].split.collect{|s| "Q" + (answer_num = answer_num + 1).to_s + ". " + s } * ", ")}
 	end
 
 
@@ -432,7 +447,7 @@ class Columbawawi < SMS::App
 	serve /\A(died|dead|quit)(?:\s+(.+?)\s*)?(?=died|dead|quit|\Z)/i
 	def remove_child(msg, type, str)
 		
-		reporter = identify(msg.sender)	
+		reporter = identify(msg)	
 		
 		# parse the uid tokens from this message (we use fuzz rather than 
 		# a simple regex, to accept a wide range of formatting disasters)
