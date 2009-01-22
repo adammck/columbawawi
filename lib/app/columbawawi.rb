@@ -24,6 +24,7 @@ class Columbawawi < SMS::App
 		:dont_understand => 'Sorry, I do not understand "%s"',
 		:oops => "Oops! ",
 		:child => "Child ",
+		:hello => "Hello, %s!",
 		
 		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.',
 		:invalid_child   => "Sorry, I can't find a Child# %s. If this is a new child, please register before reporting.",
@@ -184,6 +185,18 @@ class Columbawawi < SMS::App
 	end
 	
 	public
+	
+	serve /\A(?:i\s*am|my\s*name\s*is)\s*(.+?)?(?=new|report|\Z)/i
+	def my_name_is(msg, name)
+		
+		# find the reporter object and
+		# update with the new name
+		r = identify(msg.sender)
+		r.name = name
+		r.save
+		
+		msg.respond(assemble(:hello, [name]))
+	end
 	
 	serve /\A(?:new)(?:\s+(.+?)\s*)?(?=new|\Z)/i
 	def register(msg, str)

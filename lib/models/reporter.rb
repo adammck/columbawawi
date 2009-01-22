@@ -15,7 +15,7 @@ class Reporter
 	# Return a friendly description of this
 	# reporter, using what information we have.
 	def summary
-		name or phone
+		(name ? name.split[0] : nil) or phone
 	end
 	
 	# Return everything we know about this
