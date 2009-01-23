@@ -29,6 +29,7 @@ class Columbawawi < SMS::App
 		:invalid_gmc     => 'Sorry, "%s" is not a valid GMC#.',
 		:invalid_child   => "Sorry, I can't find a Child# %s. If this is a new child, please register before reporting.",
 		:ask_replacement => 'Child# %s is already registered at %s. Please reply "%s" or "%s" to confirm replacement.',
+		:missing_data => 'Report for Child %s is missing data for ',
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
 		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
@@ -37,6 +38,7 @@ class Columbawawi < SMS::App
 		
 		:thanks_new => "Thank you for registering Child ",
 		:thanks_report => "Thank you for reporting on Child %s",
+		:thanks_survey=> "Thank you for surveying the household of Child %s",
 		:thanks_replace => "Thank you for replacing Child %s.",
 		:thanks_remove => "Thank you for removing Child %s.",
 
@@ -290,22 +292,14 @@ class Columbawawi < SMS::App
 			:date => msg.sent)
 		
 
-		# build a string summary containing all
-		# of the normalized data that we just
-		# parsed, as flat key=value pairs
-		summary = (@rep.matches.collect do |m|
-			unless m.token.name == :uid
-				"#{m.token.name}=#{m.humanize}"
-			end
-		end).compact.join(", ")
+		# append ratio to the summary
+		r.ratio.nil? ? ratio = "" : ratio = ", w/h%=#{r.ratio}"
+		msg.respond(assemble(:thanks_report, [summarize(@rep) + ratio]))
 		
-		# verify receipt of this registration,
-		# including all tokens that we parsed,
-		# and the w/h ratio, if available
-		suffix = (summary != "") ? ": #{summary}" : ""
-		suffix += ", w/h%=#{r.ratio}." unless r.ratio.nil?
-		msg.respond(assemble(:thanks_report, [summarize(@rep)]))
-		
+		# send notice of missing data
+		@rep.misses.empty? ? missing = "" : missing = @rep.misses.collect{|m| m.title} * ', '
+		msg.respond(assemble(:missing_data, missing, [@rep[:uid].humanize])) unless @rep.misses.empty?
+
 		# send advice to the sender if the
 		# child appears to be severely or
 		# moderately malnourished
@@ -351,12 +345,12 @@ class Columbawawi < SMS::App
 		
 		# fetch the gmc; abort if it wasn't valid
 		unless gmc = Gmc.first(:uid => gmc_uid)
-			return msg.respond(assemble(:invalid_gmc))
+			return msg.respond(assemble(:invalid_gmc, [gmc_uid]))
 		end
 		
 		# same for the child
 		unless child = gmc.children.first(:uid => child_uid)
-			return msg.respond(assemble(:invalid_child))
+			return msg.respond(assemble(:invalid_child, [@sur[:uid].humanize]))
 		end
 
 		section_names = [" ", "Income sources: ", "Food available: ", "Food consumption patterns: ", "Shocks: ", "Changes in household: "] 
@@ -384,8 +378,10 @@ class Columbawawi < SMS::App
 		# arrays start with 0 while mysql starts with 1
 		answers.each_with_index do |a,i| Entry.create(	
 			:date => msg.sent,
-			:answer => Answer.get(((i+1) * (a.to_i+1)))
+			:answer => Answer.get((i+1) * (a.to_i+1))
 		)end
+
+		msg.respond(assemble(:thanks_survey, [@sur[:uid].humanize]))
 
 		# counter as we return confirmation
 		answer_num = 0
