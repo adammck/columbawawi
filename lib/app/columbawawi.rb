@@ -8,7 +8,8 @@ require "#{here}/../parsers.rb"
 
 # import rubysms, which
 # is not a ruby gem yet :(
-require "#{here}/../../../rubysms/lib/rubysms.rb"
+rubysms_dir = "#{here}/../../../rubysms"
+require File.expand_path("#{rubysms_dir}/lib/rubysms.rb")
 
 
 # monkey patch the incoming message class, to

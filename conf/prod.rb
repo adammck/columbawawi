@@ -3,9 +3,10 @@
 
 $conf = {
 	:backends => [
+		# serve mootools via the webui, so we can run offline
+		[:HTTP, "HTTP", "http://localhost:4000/javascripts/mootools-1.2.1-core-yc.js"],
 		[:GSM, "Zain", "/dev/ttyUSB0"],
-		[:GSM, "TNM", "/dev/ttyUSB1"],
-		:HTTP
+		[:GSM, "TNM", "/dev/ttyUSB1"]
 	],
 	
 	:database => {
