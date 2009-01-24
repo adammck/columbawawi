@@ -22,13 +22,10 @@
 			</div>
 			<div id="breadcrumbs">
 				<a href="/">Malawi</a>
-				
-				<% if @district %>
-				&raquo; <a href="/<%= @district.slug %>"><%= @district.title %></a>
-
-				<% if @gmc %>
-				&raquo; <a href="/<%= @district.slug %>/<%= @gmc.slug %>"><%= @gmc.title %></a>
-				<% end %>	
+				<% if @crumbs %>
+				<% for title, link in @crumbs %>
+				&raquo; <% if link %><a href="<%= link %>"><% end %><%= title %><% if link %></a><% end %>
+				<% end %>
 				<% end %>
 			</div>
 			<div id="content">

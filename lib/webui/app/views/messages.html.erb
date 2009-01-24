@@ -1,6 +1,6 @@
 <div class="module log">
 	<table>
-		<caption>Recent Messages</caption>
+		<caption>Raw Messages<span> from <%= @data_from %></span></caption>
 		<thead>
 			<tr>
 				<th scope="column">Initiator</th>
@@ -29,6 +29,19 @@
 				</td>
 			</tr>
 			<% end %>
+			<% if @raw_messages.empty? %>
+			<tr class="no-data">
+				<td colspan="2">
+					No messages have been sent to or received from this Reporter yet.<br />
+					(scope: <%= @data_from %>)
+				</td>
+			</tr>
+			<% end %>
 		</tbody>
+		<tfoot>
+			<tr><td colspan="10">
+				<a href="messages.xls">Export to Excel</a>
+			</td></tr>
+		</tfoot>
 	</table>
 </div>

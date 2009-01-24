@@ -1,30 +1,16 @@
-class DistrictApp < Application
-	provides :json
+class Districts < Application
+	
+	before do
+		fetch_district
+		@gmcs      = Gmc.all("district.id" => @district.id, :order => [:id.desc])
+		@reports   = Report.all("child.gmc.district.id" => @district.id, :order => [:date.desc])
+		@children  = Child.all("gmc.district.id" => @district.id, :order => [:id.desc])
+		@data_from = "all GMCs in #{@district.title} District"
+	end
 	
   def index
-    @data_from = "all GMCs"
-    @reports = Report.all(:order => [:date.desc])
-    @children = Child.all(:order => [:id.desc])
-    render :index
-  end
-  
-  def district
-  	fetch_district
-  	
-  	@data_from = "all GMCs in #{@district.title} District"
-  	@reports = Report.all("child.gmc.district.id" => @district.id)
-  	@children = Child.all("gmc.district.id" => @district.id)
-  	render :index
-  end
-  
-  def gmc
-  	fetch_district
-  	fetch_gmc
-  	
-  	@data_from = "#{@gmc.title} GMC in #{@district.title} District"
-  	@reports = Report.all("child.gmc.id" => @gmc.id)
-  	@children = Child.all("gmc.id" => @gmc.id)
-  	
-  	render :index
+  	@crumbs << [@district.title, "/#{@district.slug}/"]
+  	@crumbs << ["Dashboard"]
+    render :template => "dashboard"
   end
 end

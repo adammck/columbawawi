@@ -1,6 +1,10 @@
 class Application < Merb::Controller
   protected
   
+  before do
+  	@crumbs = []
+  end
+  
   def fetch_district
   	@district = District.first(:slug => params[:district])
   	raise NotFound if @district.nil?    

@@ -21,7 +21,20 @@
 				<% end %>
 			</tr>
 			<% end %>
+			<% if @children.empty? %>
+			<tr class="no-data">
+				<td colspan="10">
+					No children are registered yet.<br />
+					(scope: <%= @data_from %>)
+				</td>
+			</tr>
+			<% end %>
 		</tbody>
+		<tfoot>
+			<tr><td colspan="10">
+				<a href="children.xls">Export to Excel</a>
+			</td></tr>
+		</tfoot>
 	</table>
 </div>
 
@@ -61,14 +74,20 @@
 			</tr>
 			<% end %>
 			<% end %>
+			<% if @reports.empty? %>
+			<tr class="no-data">
+				<td colspan="10">
+					No reports have been received yet.<br />
+					(scope: <%= @data_from %>)
+				</td>
+			</tr>
+			<% end %>
 		</tbody>
 		<tfoot>
 			<tr><td colspan="10">
-				<a href="map">Plot these reports on a map</a>
+				<a href="reports.xls">Export to Excel</a> &bull;
+				<a href="map">View on Google Map</a>
 			</td></tr>
 		</tfoot>
 	</table>
-	<script type="text/javascript">
-		
-	</script>
 </div>

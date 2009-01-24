@@ -1,14 +1,15 @@
-class GlobalApp < Application
+class Globals < Application
 	
 	before do
+		#@districts = District.all(:order => [:title.asc])
+		@reports   = Report.all(:order => [:date.desc])
+		@children  = Child.all(:order => [:id.desc])
+		#@gmcs      = Gmc.all(:order => [:id.desc])
 		@data_from = "all GMCs"
-		@districts = District.all(:order => [:title.asc])
-		@reports = Report.all(:order => [:date.desc])
-		@children = Child.all(:order => [:id.desc])
-		@gmcs     = Gmc.all(:order => [:id.desc])
 	end
 	
   def index
+  	@crumbs << ["Latest Data"]
     render :template => "dashboard"
   end
   
