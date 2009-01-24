@@ -1,0 +1,28 @@
+#backend .trigger {
+	position: absolute;
+	right: 4px;
+	bottom: 4px;
+	width: 8px;
+	height: 14px;
+	text-indent: 9999px;
+	overflow: hidden;
+	cursor: pointer;
+	
+	/* rapidsms cellphone icon */
+	background: url("/images/cellphone.png");
+}
+
+#backend iframe {
+	position: absolute;
+	z-index: 1;
+	right: 0;
+	bottom: 0;
+	border: 0;
+	
+	/* the log window is 14em @ 8pt monospace,
+	 * so roughly equal that here. the rest of the
+	 * iframe will be blocking but transparent */
+	font: 8pt monospace;
+	width: 30em;
+	height: 22em;
+}
