@@ -4,6 +4,7 @@
 		<title>RapidSMS Nutrition Surveillance</title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<link rel="stylesheet" href="/stylesheets/master.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="/stylesheets/nav.css" type="text/css" media="screen" />
 		<script type="text/javascript" src="/javascripts/mootools-1.2.1-core-yc.js"></script>
 		<script type="text/javascript" src="/javascripts/application.js"></script>
 	</head>
@@ -13,18 +14,32 @@
 				<div id="branding">
 					<h1 id="site-name"><a title="Return to the Dashboard" href="/">RapidSMS :: Nutrition Surveilance</a></h1>
 				</div>
-				<div id="pilot-links">
-					Pilot GMCs:
-					<% for gmc in pilot_gmcs %>
-					<a href="/<%= gmc.district.slug %>/<%= gmc.slug %>/"><%= gmc.title %></a>
-					<% end %>
-				</div>
 			</div>
 			<div id="breadcrumbs">
 				<a href="/">Malawi</a>
 				<% if @crumbs %>
 				<% for title, link in @crumbs %>
 				&raquo; <% if link %><a href="<%= link %>"><% end %><%= title %><% if link %></a><% end %>
+				<% end %>
+				<% end %>
+			</div>
+			<div id="nav">
+				<% if @districts %>
+				<div>
+					<h2>Districts</h2>
+					<ul><% for district in @districts %><% if @district == district %>
+						<li class="active"><%= district.title %></li><% else %>
+						<li><a href="/<%= district.slug %>"><%= district.title %></a></li><% end; end %>
+					</ul>
+				</div>
+				<% if @gmcs %>
+				<div>
+					<h2>GMCs</h2>
+					<ul><% for gmc in @gmcs %><% if @gmc == gmc %>
+						<li class="active"><span title="GMC# <%= gmc.uid %>"><%= gmc.title %></a></span></li><% else %>
+						<li><a href="/<%= gmc.district.slug %>/<%= gmc.slug %>"><span title="GMC# <%= gmc.uid %>"><%= gmc.title %></a></span></li><% end; end %>
+					</ul>
+				</div>
 				<% end %>
 				<% end %>
 			</div>
@@ -36,9 +51,9 @@
 <!-- end -->
 
 			</div>
-			<div id="footer">
-				RapidSMS Nutrition Surveilance &copy; UNICEF 2009
-			</div>
+		</div>
+		<div id="footer">
+			RapidSMS Nutrition Surveilance &copy; UNICEF 2009
 		</div>
 	</body>
 </html>

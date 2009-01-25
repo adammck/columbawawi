@@ -1,0 +1,31 @@
+/* Navigation Stylesheet
+ * vim:set noet:
+ * --
+ * This stylesheet defines a generic-looking left
+ * sidebar containing single-level divs of links */
+ 
+#nav {
+	float: left;
+	width: 14em;
+	padding: 1em;
+}
+
+	#nav div {
+		margin-bottom: 1em; }
+		
+		#nav ul {
+			margin: 0;
+			padding: 0;
+			padding-left: 0.5em;
+			background: url("/images/nav-section-bg.png") repeat-x;
+		}
+			
+		#nav li {
+			display: block;
+			padding-top: 0.5em;
+			margin: 0;
+		}
+		
+			#nav li.active {
+				font-weight: bold;
+			}

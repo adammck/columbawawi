@@ -4,7 +4,6 @@
  * This stylesheet creates a generic RapidSMS look
  * that can be shared between UNICEF webuis */
 
-
 body {
 	background: #eef url("../images/page-bg.png") repeat-y 50% 0;
 	font: 12px "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
@@ -27,11 +26,16 @@ a {
 #container {
 	width: 80em;
 	margin: 0 auto;
+	background: #fff;
+	overflow: auto;
 }
 
 	/* no scaling for ie6 */
 	* html #container {
 		width: 960px; }
+
+
+
 
 /* steal header bg from unicef.org */
 #header {
@@ -71,108 +75,118 @@ a {
 			background: url("../images/rapidsms.png") no-repeat 0 50%;
 		}
 
-	/* align with dark stripe
-	 * of header bg */	
-	#pilot-links {
-		position: absolute;
-		top: 89px;
-		right: 10px;
-		line-height: 33px;
-		text-align: right;
-		font-size: 11px;
-	}
-	
-		#pilot-links a {
-			color: #ddf;
-		}
+
+
 
 /* page hierachy, in the form
  * COUNTRY -> DISTRICT -> GMC */
 #breadcrumbs {
-	background: #fff;
 	padding: 10px;
 	font-size: 200%;
 	color: #ddf;
+	border-bottom: 1px dotted #eef;
 }
-		
+
+
 
 
 #content {
+	float: left;
 	padding: 1em;
-	background: #fff;
-	border-top: 1px dotted #eef;
+	padding-left: 0;
 }
 
-
-	/* generic table styles */
-	
-	#content table {
-		border-collapse: collapse;
-		font-size: 11px;
+	/* anything that is boring, default,
+	 * unknown, not important, etc */
+	span.na {
+		color: #ccc;
 	}
 	
-		#content h2,
-		#content caption {
-			background: #74d7e3 url(../images/h2-bg.png) repeat-x;
-			border-bottom: 1px solid #4bd;
-			color: #fff;
-			font-weight: bold;
-			font-size: 100%;
-			margin: 0;
-			padding: 5px;
-			text-align: left;
-			white-space: nowrap;
-		}
+	/* full-page errors, like 404,
+	 * from app/views/exceptions */
+	div.exception {
+		border: 10px solid #fdd;
+		font-family: monospace;
+		padding: 20px;
+	}
+
+
+
+
+/* table captions are a kind of header,
+ * so they look the same. the look is
+ * vaguely ripped off from django */
+h2, caption {
+	background: #74d7e3 url(../images/h2-bg.png) repeat-x;
+	border-bottom: 1px solid #4bd;
+	color: #fff;
+	font-weight: bold;
+	font-size: 100%;
+	margin: 0;
+	padding: 0.5em;
+	text-align: left;
+	white-space: nowrap;
+}
 		
-			/* additional, less important info can
-			 * be wrapped in a span to dullify it */
-			#content caption span,
-			#content h2 span {
-				color: #e3f7f9;
-				font-size: 80%;
-			}
-		
-		#content td,
-		#content th {
+	/* additional, less important info can
+	 * be wrapped in a span to dullify it */
+	h2 span,
+	caption span {
+		color: #e3f7f9;
+		font-size: 80%;
+	}
+
+
+
+
+table {
+	border-collapse: collapse; }	
+
+	tr { }
+	
+		td, th {
 			padding: 0.5em;
 		}
 		
-		#content th {
-			background: #eee url(../images/table-header-bg.png) repeat-x;
-			font-weight: normal;
-			text-align: left;
-			color: #444;
-		}
+			th {
+				background: #eee url(../images/table-header-bg.png) repeat-x;
+				font-weight: normal;
+				text-align: left;
+				color: #444;
+			}
 		
-		#content td {
-			border-top: 1px solid #ddd; }
+			td {
+				border-top: 1px solid #ddd; }
+			
+				/* links in table data are usually to drill-down
+				 * into related objects, so don't highlight them.
+				 * TODO: is this really a good idea? */
+				td a {
+					color: #000; }
 		
-			/* links in table data are usually to drill-down
-			 * into related objects, so don't highlight them.
-			 * TODO: is this really a good idea? */
-			#content td a {
-				color: #000; }
+	tr.no-data { }
 		
-		#content tr.no-data { }
-		
-			#content tr.no-data td {
+			tr.no-data td {
 				text-align: center;
-				line-height: 1.5;
 				padding: 2em;
 				color: #aaa;
 			}
 
-		#content tfoot {
-			background: #eee url(../images/table-footer-bg.png) repeat-x 0 100%;
-			text-align: right;
-			font-size: 80%;
-			color: #eee;
-		}
+	tfoot {
+		background: #eee url(../images/table-footer-bg.png) repeat-x 0 100%;
+		text-align: right;
+		font-size: 80%;
+		color: #eee;
+	}
 		
-			#content tfoot a {
-				color: #aaa;
-			}
-	
+		/* footer links are dull, because they're
+		 * less important than the data. TODO: is this
+		 * totally stupid? (i don't care, it's pretty) */
+		tfoot a {
+			color: #aaa; }
+
+
+
 	
 	/* today's reports */
 	
@@ -244,25 +258,13 @@ a {
 			#content tr.out td.dir { color: #0f0; }
 
 
-	/* anything that is boring, default,
-	 * unknown, not important, etc */
-	#content span.na {
-		color: #ccc;
-	}
-	
-	/* full-page errors, like 404,
-	 * from app/views/exceptions */
-	#content div.exception {
-		border: 10px solid #fdd;
-		font-family: monospace;
-		padding: 20px;
-	}
-
 
 /* legal junk */
 #footer {
+	clear: both;
+	width: 80em;
+	margin: 0 auto;
 	text-align: right;
-	font-size: 11px;
-	padding: 10px;
+	padding-top: 0.5em;
 	color: #ccc;
 }

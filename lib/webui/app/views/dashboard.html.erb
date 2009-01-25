@@ -2,8 +2,8 @@
 	<table>
 		<caption>Children<span> from <%= @data_from %></span></caption>
 		<thead>
-			<th>District</th>
-			<th><abbr title="Growth Monitoring Center">GMC</abbr></th>
+			<% unless @district %><th>District</th><% end %>
+			<% unless @gmc %><th><abbr title="Growth Monitoring Center">GMC</abbr></th><% end %>
 			<th>Child#</th>
 			<th>Age (months)</th>
 			<th>Gender</th>
@@ -12,8 +12,8 @@
 		<tbody>
 			<% for child in @children %>
 			<tr>
-				<td><a href="/<%= child.gmc.district.slug %>/"><%= child.gmc.district.title %></a></td>
-				<td><a href="/<%= child.gmc.district.slug %>/<%= child.gmc.slug %>/"><span title="GMC# <%= child.gmc.uid %>"><%= child.gmc.title %></span></a></td>
+				<% unless @district %><td><a href="/<%= child.gmc.district.slug %>/"><%= child.gmc.district.title %></a></td><% end %>
+				<% unless @gmc %><td><a href="/<%= child.gmc.district.slug %>/<%= child.gmc.slug %>/"><span title="GMC# <%= child.gmc.uid %>"><%= child.gmc.title %></span></a></td><% end %>
 				<td><%= child.uid %></td>
 				
 				<% for field in [:age_in_months, :gender, :contact] %>
@@ -24,8 +24,7 @@
 			<% if @children.empty? %>
 			<tr class="no-data">
 				<td colspan="10">
-					No children are registered yet.<br />
-					(scope: <%= @data_from %>)
+					No children yet.
 				</td>
 			</tr>
 			<% end %>
@@ -42,8 +41,8 @@
 	<table>
 		<caption>Today's Reports<span> from <%= @data_from %></span></caption>
 		<thead>
-			<th>District</th>
-			<th><abbr title="Growth Monitoring Center">GMC</abbr></th>
+			<% unless @district %><th>District</th><% end %>
+			<% unless @gmc %><th><abbr title="Growth Monitoring Center">GMC</abbr></th><% end %>
 			<th>Reporter</th>
 			<th>Child#</th>
 			<th>Weight</th>
@@ -56,8 +55,8 @@
 		<tbody>
 			<% for report in @reports %>
 			<tr<% if report.cancelled %> class="cancelled"<% elsif report.warnings? %> class="has_warnings"<% end %>>
-				<td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td>
-				<td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td>
+				<% unless @district %><td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td><% end %>
+				<% unless @gmc %><td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td><% end %>
 				<td><span title="<%= report.reporter.detail %>"><%= report.reporter.summary %></span></td>
 				<td><%= report.child.uid %></td>
 				<% for field in [:weight, :height, :muac, :oedema, :diarrhea] %>
@@ -77,8 +76,7 @@
 			<% if @reports.empty? %>
 			<tr class="no-data">
 				<td colspan="10">
-					No reports have been received yet.<br />
-					(scope: <%= @data_from %>)
+					No reports yet.
 				</td>
 			</tr>
 			<% end %>

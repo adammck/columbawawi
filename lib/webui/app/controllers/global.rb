@@ -1,11 +1,8 @@
 class Globals < Application
 	
 	before do
-		#@districts = District.all(:order => [:title.asc])
-		@reports   = Report.all(:order => [:date.desc])
-		@children  = Child.all(:order => [:id.desc])
-		#@gmcs      = Gmc.all(:order => [:id.desc])
-		@data_from = "all GMCs"
+		@children = Child.all(:order => [:id.desc])
+		@reports  = Report.all(:order => [:date.desc])
 	end
 	
   def index
