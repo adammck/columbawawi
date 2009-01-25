@@ -39,9 +39,10 @@ Merb::Router.prepare do
   match("/map"               ).to(:controller => :globals, :action => :map)
   
   # provides an overview of what's hsening in each scope
-  match("/:district/:gmc/").to(:controller => :gmcs, :action => :index)
-  match("/:district/"     ).to(:controller => :districts, :action => :index)
-  match("/"               ).to(:controller => :globals, :action => :index)
+  match("/:district/:gmc/:child").to(:controller => :children,  :action => :index)
+  match("/:district/:gmc/"      ).to(:controller => :gmcs,      :action => :index)
+  match("/:district/"           ).to(:controller => :districts, :action => :index)
+  match("/"                     ).to(:controller => :globals,   :action => :index)
   
   # returns a list of gmcs as json data for each scope
   match("/:district/gmc.json").to(:controller => :districts, :action => :all_gmc)

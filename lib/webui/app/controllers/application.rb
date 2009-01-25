@@ -21,7 +21,7 @@ class Application < Merb::Controller
 	  	raise NotFound if @district.nil?
 	  	
 	  	# update the data source (for labels) and breadcrumbs
-  		@data_from = "all GMCs in #{@district.title} District"
+  		@data_from = "#{@district.title} District"
 	  	@crumbs << [@district.title, "/#{@district.slug}/"]
 	  	
 	  	# display the list of gmcs contained
@@ -34,13 +34,27 @@ class Application < Merb::Controller
   		if params[:gmc]
   			
   			# load the gmc object and abort if invalid
-  			@gmc = Gmc.first( :district_id => @district.id, :slug => params[:gmc])
+  			@gmc = Gmc.first(:district_id => @district.id, :slug => params[:gmc])
   			raise NotFound if @gmc.nil?
   			
   			# update the data source again (i'm overwriting the same var all
   			# the time, but it's clearer than a bunch of nested if/else)
-  			@data_from = "#{@gmc.title} GMC in #{@district.title} District"
-  			@crumbs << [@gmc.title, "/#{@district.slug}/#{@gmc.title}/"]
+  			@data_from = "#{@gmc.title} GMC in #{@data_from}"
+  			@crumbs << [@gmc.title, "/#{@district.slug}/#{@gmc.slug}/"]
+  			
+  			
+  			# the highest reporting fidelity
+  			# is children (for now...)
+  			if params[:child]
+  				
+  				# load the child or abort
+  				@child = Child.first(:gmc_id => @gmc.id, :uid => params[:child])
+  				raise NotFound if @child.nil?
+  				
+  				# update view data AGAIN
+  				@data_from = "Child# #{@child.uid} at #{@data_from}"
+  				@crumbs << ["Child# #{@child.uid}", "/#{@district.slug}/#{@gmc.slug}/#{@child.uid}"]
+  			end
   		end
 		end
   end
