@@ -73,10 +73,10 @@ Gmc.create(
 
 Gmc.create(
 	:uid => 1234,
-	:title => "Example GMC",
+	:title => "Example",
 	:slug => "example",
 	:district => District.create(
-		:title => "Example District",
+		:title => "Example",
 		:slug => "example"))
 
 puts "Migrated."
