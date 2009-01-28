@@ -30,8 +30,8 @@ db_dir = File.expand_path("#{here}/../db")
 DataMapper.setup(:default, $conf[:database])
 
 # DESTROY THE CHILDREN
-DataMapper.auto_migrate!
-
+#DataMapper.auto_migrate!
+DataMapper.auto_upgrade!
 
 
 
