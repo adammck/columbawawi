@@ -33,7 +33,7 @@ class Columbawawi < SMS::App
 		:missing_data => 'Report for Child %s is missing data for ',
 		
 		:help_new    => "To register a child, reply:\nnew [gmc#] [child#] [age] [gender] [contact]",
-		:help_report => "To report on a child's progress:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
+		:help_report => "To report on a child, reply:\nreport [gmc#] [child#] [weight] [height] [muac] [oedema] [diarrhea]",
 		:help_cancel => "To cancel a new chld or a child's most recent report:\ncancel [gmc#] [child#]",
 		:help_remove => "To remove a child:\ndied [gmc#] [child#]\nor: quit [gmc#] [child#]",
 		
@@ -64,6 +64,11 @@ class Columbawawi < SMS::App
 		:issue_too_small => "Child %s seems to have a very small MUAC. Please recheck the MUAC measurement.",
 		:issue_too_young => "Child %s is too young for MUAC measurements. Only collect MUAC if child is older than 6 months.",
 		:issue_diarrhea => "Child %s also had diarrhea last time. Please refer the child to a clinician.",
+
+		:conv_greeting => "Hello! Welcome to RapidSMS. Reply with 'help' for more information.",
+		:conv_welcome => "You are very welcome! I'm glad I could help.",
+		:conv_curse => "Would you text that to your mother?", 
+		:conv_apology => "Don't worry, it's OK. I'm sorry that I'm not easier to use!",
 	}
 	
 	
@@ -506,12 +511,37 @@ class Columbawawi < SMS::App
 	end
 	
 	
-	serve /\Ahelp/i
-	def help(msg)
-		msg.respond(assemble(:help_new, "\n---\n", :help_report))
+	serve /\A(?:help|help\s+me|please\s+help)(.*)?/i
+	def help(msg, str)
+		msg.respond(assemble(:help_new))
+		msg.respond(assemble(:help_report))
 	end
 	
+
+	serve /\A(?:hello|hi|hey)(.*)?/i
+	def hello(msg, str)
+		msg.respond(assemble(:conv_greeting))
+	end
 	
+
+	serve /\A(?:thanks|thank\s+you|thank)(.*)?/i
+	def welcome(msg, str)
+		msg.respond(assemble(:conv_welcome))
+	end
+
+
+	serve /\A(?:fuck|shit|damn|bitch|hell)(.*)?/i
+	def curse(msg, str)
+		msg.respond(assemble(:conv_curse))
+	end
+
+
+	serve /\A(?:sorry|zicomo|my\s+bad|oops|oh\s+no)(.*)?/i
+	def apology(msg, str)
+		msg.respond(assemble(:conv_apology))
+	end
+
+
 	serve :anything
 	def anything_else(msg, str)
 		msg.respond(assemble(:dont_understand, [str]))
