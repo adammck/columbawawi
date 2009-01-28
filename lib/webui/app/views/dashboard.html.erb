@@ -59,7 +59,7 @@
 			<tr<% if report.cancelled %> class="cancelled"<% elsif report.warnings? %> class="has_warnings"<% end %>>
 				<% unless @district %><td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td><% end %>
 				<% unless @gmc %><td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td><% end %>
-				<td><span title="<%= report.reporter.detail %>"><%= report.reporter.summary %></span></td>
+				<% unless report.reporter.nil? %><td><span title="<%= report.reporter.detail %>"><%= report.reporter.summary %></span></td><% end %>
 				<% unless @child %><td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/<%= report.child.uid %>/"><%= report.child.uid %></a></td><% end %>
 				<% for field in [:weight, :height, :muac, :oedema, :diarrhea] %>
 				<td><% unless report.send(field).nil? %><%= report.send(field) %><% else %><span class="na" title="This field was not reported">?</span><% end %></td>
