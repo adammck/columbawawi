@@ -5,6 +5,7 @@
  * that can be shared between UNICEF webuis */
 
 body {
+	position: relative;
 	background: #eef url("../images/page-bg.png") repeat-y 50% 0;
 	font: 12px "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 	line-height: 1;
@@ -265,6 +266,6 @@ table {
 	width: 80em;
 	margin: 0 auto;
 	text-align: right;
-	padding-top: 0.5em;
+	padding: 0.5em 0;
 	color: #ccc;
 }
