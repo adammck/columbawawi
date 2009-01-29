@@ -25,5 +25,5 @@ Merb::BootLoader.after_app_loads do
   # This will get executed after your app's classes have been loaded.
 end
 
-Merb.add_mime_type :kml, :to_kml, %w[application/vnd.google-earth.kml+xml]
+Merb.add_mime_type :xls, nil, %w[application/vnd.ms-excel]
 

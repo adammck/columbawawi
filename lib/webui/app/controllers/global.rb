@@ -10,6 +10,27 @@ class Globals < Application
     render :template => "dashboard"
   end
   
+  protected
+  
+  def children_xls
+  	[["District", "GMC", "Child#", "Age (months)", "Gender", "Contact"]] +\
+  	@children.collect do |child|
+  		[child.gmc.district.title, child.gmc.title, child.uid, child.age_in_months, child.gender, child.contact]
+  	end
+  end
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   def all_gmc
   	render Gmc.all.to_a.to_json, :format => :json
   end
