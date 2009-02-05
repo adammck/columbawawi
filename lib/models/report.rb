@@ -32,7 +32,7 @@ class Report
 	
 	# range of sane heights
 	# for young children
-	TOO_TALL = 100.0
+	TOO_TALL = 130.0
 	TOO_SHORT = 10.0
 
 	# same for weights
