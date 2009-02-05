@@ -39,11 +39,17 @@ Merb::Router.prepare do
   match("/map"               ).to(:controller => :globals, :action => :map)
   
   # provides an overview of what's hsening in each scope
-  match("/:district/:gmc/:child").to(:controller => :children,  :action => :index)
-  match("/:district/:gmc/"      ).to(:controller => :gmcs,      :action => :index)
-  match("/:district/"           ).to(:controller => :districts, :action => :index)
-  match("/"                     ).to(:controller => :globals,   :action => :index)
+  match("/:district/:gmc/:child/").to(:controller => :children,  :action => :index)
+  match("/:district/:gmc/"       ).to(:controller => :gmcs,      :action => :index)
+  match("/:district/"            ).to(:controller => :districts, :action => :index)
+  match("/"                      ).to(:controller => :globals,   :action => :index)
   
+  # provides an overview of what's hsening in each scope
+  match("/:district/:gmc/:child/:report.xls").to(:controller => :children,  :action => :excel)
+  match("/:district/:gmc/:report.xls"       ).to(:controller => :gmcs,      :action => :excel)
+  match("/:district/:report.xls"            ).to(:controller => :districts, :action => :excel)
+  match("/:report.xls"                      ).to(:controller => :globals,   :action => :excel)
+	 
   # returns a list of gmcs as json data for each scope
   match("/:district/gmc.json").to(:controller => :districts, :action => :all_gmc)
   match("/gmc.json"          ).to(:controller => :globals, :action => :all_gmc)

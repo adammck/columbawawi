@@ -1,4 +1,28 @@
 class Application < Merb::Controller
+  
+  # any route can point to this action in any controller
+  # (since it's inherited), and provide custom excel
+  # reports by providing a: #{params[:report]}_xls
+  # method which returns a two-dimensional array
+  def excel
+  	str = "#{params[:report]}_xls"
+  	raise NotFound unless respond_to?(str)
+  	
+  	# fetch the data
+  	data = method(str).call
+  	
+  	# rejig the data grid into an html
+  	# table, to be interpreted by excel
+  	html =\
+  	"<table>" + (data.collect do |row|
+  		"<tr>" + (row.collect do |cell, n|
+  			"<td>#{cell}</td>"
+  		end).join("") + "</tr>"
+  	end).join("") + "</table>"
+  	
+  	render html, :format => :xls
+  end
+  
   protected
   
   before do

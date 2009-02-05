@@ -3,12 +3,14 @@
 	<table>
 		<caption>Latest Children<span> from <%= @data_from %></span></caption>
 		<thead>
-			<% unless @district %><th>District</th><% end %>
-			<% unless @gmc %><th><abbr title="Growth Monitoring Center">GMC</abbr></th><% end %>
-			<th>Child#</th>
-			<th>Age (months)</th>
-			<th>Gender</th>
-			<th>Contact</th>
+			<tr>
+				<% unless @district %><th>District</th><% end %>
+				<% unless @gmc %><th><abbr title="Growth Monitoring Center">GMC</abbr></th><% end %>
+				<th>Child#</th>
+				<th>Age (months)</th>
+				<th>Gender</th>
+				<th>Contact</th>
+			</tr>
 		</thead>
 		<tbody>
 			<% for child in @children %>
@@ -23,14 +25,14 @@
 			<% end %>
 			<% if @children.empty? %>
 			<tr class="no-data">
-				<td colspan="10">
+				<td colspan="6">
 					No children yet.
 				</td>
 			</tr>
 			<% end %>
 		</tbody>
 		<tfoot>
-			<tr><td colspan="10">
+			<tr><td colspan="6">
 				<a href="children.xls">Export to Excel</a>
 			</td></tr>
 		</tfoot>
@@ -43,16 +45,18 @@
 	<table>
 		<caption>Latest Reports<span> from <%= @data_from %></span></caption>
 		<thead>
-			<% unless @district %><th>District</th><% end %>
-			<% unless @gmc %><th><abbr title="Growth Monitoring Center">GMC</abbr></th><% end %>
-			<th>Reporter</th>
-			<% unless @child %><th>Child#</th><% end %>
-			<th>Weight</th>
-			<th>Height</th>
-			<th><abbr title="Mid-Upper Arm Circumference">MUAC</abbr></th>
-			<th>Oedema?</th>
-			<th>Diarrhea?</th>
-			<th>Received</th>
+			<tr>
+				<% unless @district %><th>District</th><% end %>
+				<% unless @gmc %><th><abbr title="Growth Monitoring Center">GMC</abbr></th><% end %>
+				<th>Reporter</th>
+				<% unless @child %><th>Child#</th><% end %>
+				<th>Weight</th>
+				<th>Height</th>
+				<th><abbr title="Mid-Upper Arm Circumference">MUAC</abbr></th>
+				<th>Oedema?</th>
+				<th>Diarrhea?</th>
+				<th>Received</th>
+			</tr>
 		</thead>
 		<tbody>
 			<% for report in @reports %>

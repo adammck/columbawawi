@@ -3,6 +3,7 @@
 
 class Child
 	include DataMapper::Resource
+	
 	belongs_to :reporter
 	belongs_to :gmc
 	has n, :reports
