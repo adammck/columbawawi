@@ -27,6 +27,9 @@
 
 Merb.logger.info("Compiling routes...")
 Merb::Router.prepare do
+
+  # maintenance and backup stuff
+  match("/dump").to(:controller => :maintenance, :action => :dump)
 	
 	# view the raw messages for ALL, a single backend, or a single reporter
   match("/messages/"                ).to(:controller => :messages, :action => :index)
