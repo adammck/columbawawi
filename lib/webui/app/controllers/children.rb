@@ -1,6 +1,6 @@
 class Children < Application
 	before do
-		@reports  = Report.all("child.id" => @child.id, :order => [:date.desc])
+		@reports  = paginate(Report, :page=>params[:rp], "child.id" => @child.id, :order => [:date.desc])
 	end
 
 	def index

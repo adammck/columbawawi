@@ -13,7 +13,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<% for child in @children %>
+			<% for child in @children[:data] %>
 			<tr>
 				<% unless @district %><td><a href="/<%= child.gmc.district.slug %>/"><%= child.gmc.district.title %></a></td><% end %>
 				<% unless @gmc %><td><a href="/<%= child.gmc.district.slug %>/<%= child.gmc.slug %>/"><span title="GMC# <%= child.gmc.uid %>"><%= child.gmc.title %></span></a></td><% end %>
@@ -33,6 +33,11 @@
 		</tbody>
 		<tfoot>
 			<tr><td colspan="6">
+				<div class="paginator">
+					<% for n in (1..@children[:page_count]) %>
+						<a href="?cp=<%= n %>"<% if @children[:this_page] == n %> class="active"<% end %>><%= n %></a>
+					<% end %>
+				</div>
 				<a href="children.xls">Export to Excel</a>
 			</td></tr>
 		</tfoot>
@@ -59,7 +64,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			<% for report in @reports %>
+			<% for report in @reports[:data] %>
 			<tr<% if report.cancelled %> class="cancelled"<% elsif report.warnings? %> class="has_warnings"<% end %>>
 				<% unless @district %><td><a href="/<%= report.child.gmc.district.slug %>/"><%= report.child.gmc.district.title %></a></td><% end %>
 				<% unless @gmc %><td><a href="/<%= report.child.gmc.district.slug %>/<%= report.child.gmc.slug %>/"><span title="GMC# <%= report.child.gmc.uid %>"><%= report.child.gmc.title %></span></a></td><% end %>
@@ -89,7 +94,12 @@
 		</tbody>
 		<tfoot>
 			<tr><td colspan="10">
-				<a href="reports.xls">Export to Excel</a> &bull;
+				<div class="paginator">
+					<% for n in (1..@reports[:page_count]) %>
+						<a href="?rp=<%= n %>"<% if @reports[:this_page] == n %> class="active"<% end %>><%= n %></a>
+					<% end %>
+				</div>
+				<a href="reports.xls">Export to Excel</a><span>&bull;</span>
 				<a href="map">View on Google Map</a>
 			</td></tr>
 		</tfoot>

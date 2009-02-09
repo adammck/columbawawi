@@ -174,17 +174,48 @@ table {
 			}
 
 	tfoot {
-		background: #eee url(../images/table-footer-bg.png) repeat-x 0 100%;
-		text-align: right;
+		background: #eee url("../images/table-footer-bg.png") repeat-x 0 100%;
 		font-size: 80%;
-		color: #eee;
 	}
 		
-		/* footer links are dull, because they're
-		 * less important than the data. TODO: is this
-		 * totally stupid? (i don't care, it's pretty) */
-		tfoot a {
-			color: #aaa; }
+		/* no padding in the footer cell; the links will
+		 * float and pad themselves, so the clickable blocks
+		 * will be bigger and easier to hit */
+		tfoot td {
+			padding: 0; }
+		
+			/* footer links are dull, because they're
+			 * less important than the data. TODO: is this
+			 * totally stupid? (i don't care, it's pretty) */
+			tfoot a,
+			tfoot span {
+				display: block;
+				float: right;
+				padding: 0.5em;
+				color: #aaa;
+			}
+			
+				/* footer links can be broken up with spans,
+				 * which look the same, except super dull */
+				tfoot span {
+					color: #ddd; }
+				
+				/* highlight hover links brighter than
+				 * usual, since they're harder to spot */
+				tfoot a:hover {
+					background: #fff; }
+		
+			/* move all paginator links to the left,
+			 * to separate from additional views and
+			 * exporting, which lives on the right */
+			tfoot .paginator,
+			tfoot .paginator a {
+				float: left; }
+			
+				tfoot .paginator a.active {
+					background: #eee;
+					color: #000;
+				}
 
 
 

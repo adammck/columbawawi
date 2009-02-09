@@ -24,6 +24,51 @@ class Application < Merb::Controller
   end
   
   protected
+	
+	# a handy paginator, since our pagination needs are
+	# minimal, and i don't feel like depending on yet
+	# another gem. call it in any controller, like:
+	#
+	#   @items = paginate(Model, :page=>param[:page])
+	#
+	# then in the view,
+	#
+	#   <% for item in @items[:data] %>
+	#     <li><%= item[:name] %></li>
+	#   <% end %>
+	#
+	#   Page <%= @items[:this_page] %> of <%= @items[:page_count] %>
+	#
+	def paginate(model, options)
+		this_page  = (options.delete(:page)     || 1).to_i
+		per_page   = (options.delete(:per_page) || 10).to_i
+		
+		# make sure we're sorting to *something*, to make
+		# sure the data doesn't come out in arbitrary order
+		# (note that :id might not actually exist, but it's
+		# a pretty sane default)
+		unless options.has_key?(:order)
+			options[:order] = [:id.desc]
+		end
+		
+		# fetch the total number of models, to calculate
+		# the number of pages we'll need to list them all
+		page_count = (model.count(options).to_f / per_page).ceil
+		
+		# add the boundary options, leaving any other
+		# options (conditions, orders, etc) intact
+		options.merge!({
+			:offset => (this_page-1) * per_page,
+			:limit  => per_page
+		})
+		
+		# return a whole bunch of data, to
+		# be shunted straight into the view
+		{ :this_page=>this_page, :per_page=>per_page, :page_count=>page_count, :data=>model.all(options) }
+	end
+  
+  
+  
   
   before do
   	

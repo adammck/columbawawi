@@ -1,9 +1,11 @@
 class Globals < Application
 	
 	before do
-		@children = Child.all(:order => [:id.desc])
-		@reports  = Report.all(:order => [:date.desc])
+		@children = paginate(Child,  :page=>params[:cp])
+		@reports  = paginate(Report, :page=>params[:rp], :order=>[:date.desc])
 	end
+	
+	
 	
   def index
   	@crumbs << ["Latest Data"]

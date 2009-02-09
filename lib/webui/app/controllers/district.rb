@@ -1,8 +1,8 @@
 class Districts < Application
 	
 	before do
-		@children = Child.all("gmc.district.id" => @district.id, :order => [:id.desc])
-		@reports  = Report.all("child.gmc.district.id" => @district.id, :order => [:date.desc])
+		@children = paginate(Child,  :page=>params[:cp], "gmc.district.id" => @district.id)
+		@reports  = paginate(Report, :page=>params[:rp], "child.gmc.district.id" => @district.id, :order => [:date.desc])
 	end
 	
   def index
