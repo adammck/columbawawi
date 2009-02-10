@@ -39,7 +39,20 @@ class Application < Merb::Controller
 	#
 	#   Page <%= @items[:this_page] %> of <%= @items[:page_count] %>
 	#
-	def paginate(model, options)
+	def paginate(model, options={})
+		
+		# if this method was called with 'nil', return a mock object. since templates
+		# will expect the keys to be present in the output of this method, this is a
+		# handy way to temporarily remove the data from a table without errors
+		if model.nil?
+			return({
+				:this_page  =>1,
+				:per_page   =>10,
+				:page_count =>1,
+				:data       =>[]
+			})
+		end
+		
 		this_page  = (options.delete(:page)     || 1).to_i
 		per_page   = (options.delete(:per_page) || 10).to_i
 		
