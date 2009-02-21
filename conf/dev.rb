@@ -9,10 +9,10 @@ $conf = {
 	],
 	
 	:database => {
-		:adapter => "mysql",
-		:host => "localhost",
-		:database => "columbawawi",
-		:username => "unicef",
-		:password => "m3p3m3p3"
+		:adapter  => "mysql",
+		:host     => "localhost",
+		:database => "columbawawi-dev",
+		:username => "root",
+		:password => ""
 	}
 }
