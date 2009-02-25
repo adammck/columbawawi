@@ -1,14 +1,54 @@
 class Global < Application
 	
 	before do
-		@children = paginate(Child,  :page=>params[:cp])
-		@reports  = paginate(Report, :page=>params[:rp], :order=>[:date.desc])
+		#@children = paginate(nil)#Child,  :page=>params[:cp])
+		#@reports  = paginate(nil)#Report, :page=>params[:rp], :order=>[:date.desc])
+	end
+	
+	def percentage(reports, meth, value=nil)
+		return nil if\
+			reports.empty?
+		
+		n = 0
+		reports.each do |report|
+			v = report.send(meth)
+			n += 1 if (value.nil? && v) || (value==v)
+		end
+	
+		# calculate the percentage of reports for which
+		# report.send(_meth_) was true, and crop it to
+		# two decimal places. this belongs in the view :|
+		ratio = n.to_f / reports.length
+		sprintf("%0.2f", ratio * 100)
 	end
 	
   def index
   	@crumbs << ["Latest Data"]
+    @tabs[:national][:active] = true
+    
+    # fetch all reports for the last 30 days to build stats
+    range = {:date.gte => (DateTime.now - 30)}
+    @stats = {}
+    
+    @districts.each do |district|
+    	reports = district.reports(range)
+    	
+    	@stats[district.id] = {
+    		:mod_mal  => percentage(reports, :malnourished?, :moderate),
+    		:sev_mal  => percentage(reports, :malnourished?, :severe),
+    		:oedema   => percentage(reports, :oedema),
+    		:diarrhea => percentage(reports, :diarrhea)
+    	}
+    end
+    
     render :template => "dashboard"
   end
+  
+  
+  
+  
+  
+  
   
   def children
   	@crumbs << ["Children"]
