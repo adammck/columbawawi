@@ -39,21 +39,26 @@ Merb::Router.prepare do
   # other views to avoid confusing "map" with a gmc or district
   match("/:district/:gmc/map").to(:controller => :gmcs, :action => :map)
   match("/:district/map"     ).to(:controller => :districts, :action => :map)
-  match("/map"               ).to(:controller => :globals, :action => :map)
+  match("/map"               ).to(:controller => :global, :action => :map)
+  
+  # a list of registered children in each scope
+  match("/:district/:gmc/children").to(:controller => :gmcs,      :action => :children)
+  match("/:district/children"     ).to(:controller => :districts, :action => :children)
+  match("/children"               ).to(:controller => :global,    :action => :children)
   
   # provides an overview of what's hsening in each scope
   match("/:district/:gmc/:child/").to(:controller => :children,  :action => :index)
   match("/:district/:gmc/"       ).to(:controller => :gmcs,      :action => :index)
   match("/:district/"            ).to(:controller => :districts, :action => :index)
-  match("/"                      ).to(:controller => :globals,   :action => :index)
+  match("/"                      ).to(:controller => :global,    :action => :index)
   
   # provides an overview of what's hsening in each scope
   match("/:district/:gmc/:child/:report.xls").to(:controller => :children,  :action => :excel)
   match("/:district/:gmc/:report.xls"       ).to(:controller => :gmcs,      :action => :excel)
   match("/:district/:report.xls"            ).to(:controller => :districts, :action => :excel)
-  match("/:report.xls"                      ).to(:controller => :globals,   :action => :excel)
+  match("/:report.xls"                      ).to(:controller => :global,    :action => :excel)
 	 
   # returns a list of gmcs as json data for each scope
   match("/:district/gmc.json").to(:controller => :districts, :action => :all_gmc)
-  match("/gmc.json"          ).to(:controller => :globals, :action => :all_gmc)
+  match("/gmc.json"          ).to(:controller => :global, :action => :all_gmc)
 end

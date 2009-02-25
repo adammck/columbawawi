@@ -47,14 +47,14 @@ class Application < Merb::Controller
 		if model.nil?
 			return({
 				:this_page  =>1,
-				:per_page   =>10,
+				:per_page   =>20,
 				:page_count =>1,
 				:data       =>[]
 			})
 		end
 		
 		this_page  = (options.delete(:page)     || 1).to_i
-		per_page   = (options.delete(:per_page) || 10).to_i
+		per_page   = (options.delete(:per_page) || 20).to_i
 		
 		# make sure we're sorting to *something*, to make
 		# sure the data doesn't come out in arbitrary order
@@ -85,10 +85,23 @@ class Application < Merb::Controller
   
   before do
   	
+		@data_from = "all GMCs"
+		
   	# initialize an array for actions to
   	# add items to the breadcrumb list
-		@data_from = "all GMCs"
   	@crumbs = []
+  	
+  	# initialize a hash of the tabs which will be displayed on this page, which can be patched
+  	# by individual actions (to update the title, url, or which one is active), but default to
+  	# something sane without explictly doing it. we're using a hash here, rather than an array,
+  	# so actions can patch by name. ie: @tabs[:gmc][:active] = true
+  	@tabs = {
+  		:national => { :title => "National", :href => "/",          :active => false, :order => 1 },
+  		:district => { :title => "District", :href => "/districts", :active => false, :order => 2 },
+  		:gmc      => { :title => "GMC",      :href => "/gmcs",      :active => false, :order => 3 },
+  		:child    => { :title => "Child",    :href => "/children",  :active => false, :order => 4 },
+  		:hsa      => { :title => "HSA",      :href => "/reporters", :active => false, :order => 5 },
+  	}
   	
 		# every page displays a list of districts
 		@districts = District.all(:order => [:title.asc])

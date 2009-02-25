@@ -5,6 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<link rel="stylesheet" href="/stylesheets/master.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="/stylesheets/nav.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="/stylesheets/tabs.css" type="text/css" media="screen" />
 		<script type="text/javascript" src="/javascripts/mootools-1.2.1-core-yc.js"></script>
 		<script type="text/javascript" src="/javascripts/application.js"></script>
 	</head>
@@ -14,6 +15,13 @@
 				<div id="branding">
 					<h1 id="site-name"><a title="Return to the Dashboard" href="/">RapidSMS :: Nutrition Surveilance</a></h1>
 				</div>
+				<ul id="tabs">
+					<% if @tabs %>
+					<% for tab in (@tabs.values.sort_by { |t| t[:order] }) %>
+					<li<% if tab[:active] %> class="active"<% end %>><a href="<%= tab[:href] %>"><%= tab[:title] %></a></li>
+					<% end %>
+					<% end %>
+				</ul>
 			</div>
 			<div id="breadcrumbs">
 				<a href="/">Malawi</a>
