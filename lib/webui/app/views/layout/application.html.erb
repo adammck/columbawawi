@@ -43,7 +43,7 @@
 				</div>
 				<% if @gmcs %>
 				<div>
-					<h2>GMCs</h2>
+					<h2>GMCs in <%= @district.title %></h2>
 					<ul><% for gmc in @gmcs %><% if @gmc == gmc %>
 						<li class="active"><span title="GMC# <%= gmc.uid %>"><%= gmc.title %></a></span></li><% else %>
 						<li><a href="/<%= gmc.district.slug %>/<%= gmc.slug %>"><span title="GMC# <%= gmc.uid %>"><%= gmc.title %></a></span></li><% end; end %>

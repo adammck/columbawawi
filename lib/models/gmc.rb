@@ -36,4 +36,11 @@ class Gmc
 			:longitude => longitude
 		}.to_json
 	end
+	
+	# Returns all of the Reports which belong to Children
+	# which belong to this GMC, along with any additional
+	# filters provided in _opts_.
+	def reports(opts={})
+		Report.all({ "child.gmc.id" => id }.merge(opts))
+	end
 end

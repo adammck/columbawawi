@@ -5,22 +5,22 @@
 		<thead>
 			<tr>
 				<td class="corner"></td>
-				<th scope="col" class="mm"><div><span>% Moderate Malnutrition</span></div></th>
-				<th scope="col" class="sm"><div><span>% Severe Malnutrition</span></div></th>
-				<th scope="col" class="st"><div><span>% Stunting</span></div></th>
-				<th scope="col" class="oe"><div><span>% Oedema</span></div></th>
-				<th scope="col" class="di"><div><span>% Diarrhea</span></div></th>
+				<th scope="col"><abbr title="Percentage of Reports indicating Moderate Malnutrition">MM</abbr></th>
+				<th scope="col"><abbr title="Percentage of Reports indicating Severe Malnutrition">SM</abbr></th>
+				<th scope="col"><abbr title="Percentage of Reports indicating Stunting">St</abbr></th>
+				<th scope="col"><abbr title="Percentage of Reports including Oedema">Oe</abbr></th>
+				<th scope="col"><abbr title="Percentage of Reports including Diarrhea">Di</abbr></th>
 			</tr>
 		</thead>
 		<tbody>
-			<% for district in @districts %>
+			<% for title, stats in @stats %>
 			<tr class="horiz-th">
-				<th scope="row"><%= district.title %></th>
-				<td><%= @stats[district.id][:mod_mal]  || '<span class="na">n/a</span>' %></td>
-				<td><%= @stats[district.id][:sev_mal]  || '<span class="na">n/a</span>' %></td>
-				<td><%= @stats[district.id][:stunting] || '<span class="na">n/a</span>' %></td>
-				<td><%= @stats[district.id][:oedema]   || '<span class="na">n/a</span>' %></td>
-				<td><%= @stats[district.id][:diarrhea] || '<span class="na">n/a</span>' %></td>
+				<th scope="row"><%= title %></th>
+				<td><%= stats[:mod_mal]  || na %></td>
+				<td><%= stats[:sev_mal]  || na %></td>
+				<td><%= stats[:stunting] || na %></td>
+				<td><%= stats[:oedema]   || na %></td>
+				<td><%= stats[:diarrhea] || na %></td>
 			</tr>
 			<% end %>
 		</tbody>

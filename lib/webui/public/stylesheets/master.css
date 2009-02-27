@@ -23,6 +23,9 @@ a {
 	a:hover {
 		text-decoration: underline; }
 
+abbr {
+	cursor: help; }
+
 /* unfortunately, it seems that this
  * kind of float hack is the cleanest way
  * to clear the variable height nav/content */
@@ -109,7 +112,9 @@ div.clear-hack {
 	/* anything that is boring, default,
 	 * unknown, not important, etc */
 	span.na {
-		color: #ccc;
+		display: block;
+		text-align: center;
+		color: #ddd;
 	}
 	
 	/* full-page errors, like 404,

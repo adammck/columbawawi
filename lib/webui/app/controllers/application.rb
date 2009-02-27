@@ -79,6 +79,49 @@ class Application < Merb::Controller
 		# be shunted straight into the view
 		{ :this_page=>this_page, :per_page=>per_page, :page_count=>page_count, :data=>model.all(options) }
 	end
+
+  # Returns an array of summarys for each of _places_,
+  # (which can be anything that has #reports, but will
+  # probably be an array of District, GMC, or Child),
+  # to be rendered as a pivot-ish table.
+  def summarize_reports(places, range)
+    stats = {}
+    
+    places.each do |place|
+    	reports = place.reports(range)
+    	
+    	stats[place.title] = {
+    		:mod_mal  => percentage(reports, :malnourished?, :moderate),
+    		:sev_mal  => percentage(reports, :malnourished?, :severe),
+    		:oedema   => percentage(reports, :oedema),
+    		:diarrhea => percentage(reports, :diarrhea)
+    	}
+    end
+    
+    stats
+  end
+  
+	# Returns the percentage of _reports_ for which the method
+	# named _meth_ returns true, or if _value_ is provided, the
+	# percentage which returns it. If _reports_ is an empty array
+	# (indicating that there are no relevant reports, for whatever
+	# reason), returns nil.
+	def percentage(reports, meth, value=nil)
+		return nil if\
+			reports.empty?
+		
+		n = 0
+		reports.each do |report|
+			v = report.send(meth)
+			n += 1 if (value.nil? && v) || (value==v)
+		end
+	
+		# calculate the percentage of reports for which
+		# report.send(_meth_) was true, and crop it to
+		# two decimal places. this belongs in the view :|
+		ratio = n.to_f / reports.length
+		sprintf("%0.2f", ratio * 100)
+	end
   
   
   
@@ -152,5 +195,34 @@ class Application < Merb::Controller
   			end
   		end
 		end
+		
+#		now = DateTime.now
+#		fmt = "%Y-%m-%d"
+#		
+#		if params.has_key?(:from)
+#			from = DateTime.strptime(params[:from], fmt)	
+#				
+#			if params.has_key?(:to)
+#				to = DateTime.strptime(params[:to], fmt)
+#			else
+#				
+#			end
+#			@range = { :from => from }
+#			
+#		else
+#			@range = {
+#				:from => (DateTime.now - 30),
+#				:to   => (DateTime.now + 1),
+#				:desc => "Last 30 days"
+#			}
+#		end
+#	
+#		if @range[:to] > now
+#			n = (now - @range[:from]).to_i
+#			@range[:desc] = "Last #{n} days"
+#		
+#		else
+#			
+#		end
   end
 end

@@ -7,6 +7,12 @@ class Districts < Application
 	
   def index
   	@crumbs << ["Latest Data"]
+    @tabs[:district][:active] = true
+    
+    # fetch all reports for the last 30 days to build stats
+    range = {:date.gte => (DateTime.now - 30)}
+    @stats = summarize_reports(@gmcs, range)
+    
     render :template => "dashboard"
   end
 end

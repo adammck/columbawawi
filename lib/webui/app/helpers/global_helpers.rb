@@ -1,8 +1,13 @@
 module Merb
   module GlobalHelpers
-    # helpers defined here available to all views. 
     def pilot_gmcs
     	Gmc.all
+    end
+    
+    # Returns a generic-looking HTML tag
+    # which says "nothing interesting here!"
+    def na
+    	%q{<span class="na">n/a</span>}
     end
   end
 end

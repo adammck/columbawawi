@@ -20,48 +20,21 @@
 	/* top-left corner is just a shim
 	 * for the x/y headers, so hide it */
 	.summary td.corner {
-		border-top :0; }
+		border-top: 0; }
 	
 	.summary thead th {
 		padding: 0 0 0.5em 0;
+		text-align: center;
 		background: none;
 	}
-	
-		/* expand the height to allow space for the
-		 * highest label (moderate malnutriton=113px) */
-		.summary thead th div {
-			position: relative;
-			height: 113px;
-			display: block;
-		}
-			
-			/* hide the titles (but leave them accessible),
-			 * and position a diagonal background image outside
-			 * of the document flow, so they can overlap without
-			 * expanding the size of the container */
-			.summary thead th span {
-				position: absolute;
-				display: block;
-				text-indent: -9999px;
-				background-repeat: no-repeat;
-				background-position: 0 100%;
-				width: 115px;
-				height: 113px;
-				left: 40%;
-				bottom: 0;
-			}
-			
-			/* hard-coded image paths for columbawawi summary criteria */
-			.summary thead th.mm span { background-image: url("../images/summary/moderate-malnutrition.png"); }
-			.summary thead th.sm span { background-image: url("../images/summary/severe-malnutrition.png"); }
-			.summary thead th.st span { background-image: url("../images/summary/stunting.png"); }
-			.summary thead th.oe span { background-image: url("../images/summary/oedema.png"); }
-			.summary thead th.di span { background-image: url("../images/summary/diarrhea.png"); }
 
 	/* full borders for this
 	 * table, unlike most */
 	.summary tbody td {
-		border: 1px solid #ddd; }
+		border: 1px solid #ddd;
+		font-family: monospace;
+		text-align: right;
+	}
 	
 	.summary tbody th {
 		background: #fff;
