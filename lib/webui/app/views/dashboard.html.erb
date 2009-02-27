@@ -1,19 +1,24 @@
-<div class="module">
+<% if @stats %>
+<div class="module summary">
 	<table>
 		<caption>Summary of Reports<span> from <%= @data_from %></span></caption>
-		<tbody>
+		<thead>
 			<tr>
-				<td></td>
-				<th scope="col"><abbr title="Percentage of Reports indicating Moderate Malnutrition">MM</abbr></th>
-				<th scope="col"><abbr title="Percentage of Reports indicating Severe Acute Malnutrition">SM</abbr></th>
-				<th scope="col"><abbr title="Percentage of Reports including Oedema">Oe</abbr></th>
-				<th scope="col"><abbr title="Percentage of Reports including Diarrhea">Di</abbr></th>
+				<td class="corner"></td>
+				<th scope="col" class="mm"><div><span>% Moderate Malnutrition</span></div></th>
+				<th scope="col" class="sm"><div><span>% Severe Malnutrition</span></div></th>
+				<th scope="col" class="st"><div><span>% Stunting</span></div></th>
+				<th scope="col" class="oe"><div><span>% Oedema</span></div></th>
+				<th scope="col" class="di"><div><span>% Diarrhea</span></div></th>
 			</tr>
+		</thead>
+		<tbody>
 			<% for district in @districts %>
-			<tr>
+			<tr class="horiz-th">
 				<th scope="row"><%= district.title %></th>
 				<td><%= @stats[district.id][:mod_mal]  || '<span class="na">n/a</span>' %></td>
 				<td><%= @stats[district.id][:sev_mal]  || '<span class="na">n/a</span>' %></td>
+				<td><%= @stats[district.id][:stunting] || '<span class="na">n/a</span>' %></td>
 				<td><%= @stats[district.id][:oedema]   || '<span class="na">n/a</span>' %></td>
 				<td><%= @stats[district.id][:diarrhea] || '<span class="na">n/a</span>' %></td>
 			</tr>
@@ -21,7 +26,7 @@
 		</tbody>
 	</table>
 </div>
-
+<% end %>
 
 <% if @children %>
 <div class="module children">

@@ -22,13 +22,21 @@ a {
 
 	a:hover {
 		text-decoration: underline; }
-		
+
+/* unfortunately, it seems that this
+ * kind of float hack is the cleanest way
+ * to clear the variable height nav/content */
+div.clear-hack {
+	overflow: hidden;
+	clear: both;
+	height: 0;
+}
+
 
 #container {
 	width: 80em;
 	margin: 0 auto;
 	background: #fff;
-	overflow: auto;
 }
 
 	/* no scaling for ie6 */
@@ -95,6 +103,7 @@ a {
 	float: left;
 	padding: 1em;
 	padding-left: 0;
+	width: 63em;
 }
 
 	/* anything that is boring, default,
@@ -150,10 +159,18 @@ table {
 		}
 		
 			th {
-				background: #eee url(../images/table-header-bg.png) repeat-x;
+				background: #e1e1e1 url(../images/table-header-bg.png) repeat-x 100% 0;
 				font-weight: normal;
 				text-align: left;
 				color: #444;
+			}
+			
+			/* for rows which have headers on the left,
+			 * remove the fancy graident and bump the
+			 * title against the content */
+			tr.horiz-th th {
+				background: #e1e1e1;
+				text-align: right;
 			}
 		
 			td {
