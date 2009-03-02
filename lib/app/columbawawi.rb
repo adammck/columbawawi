@@ -170,11 +170,14 @@ class Columbawawi < SMS::App
 
 	# finds or creates a reporter from a number
 	def identify(msg)
-
-
+		
+		# pluck the phone number from the message via
+		# the old (phone) or new (phone_number) api
+		phone = msg.respond_to?(:phone_number) ? msg.phone_number : msg.phone
+		
 		# fetch or create a reporter object exists for
 		# this caller, to own any objects that we create
-		reporter = Reporter.first_or_create(:phone => msg.number.to_s)
+		reporter = Reporter.first_or_create(:phone => phone.to_s)
 
 		# set backend in separate step so a backend
 		# will be added to existing reporters
