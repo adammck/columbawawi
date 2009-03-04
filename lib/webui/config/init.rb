@@ -26,4 +26,6 @@ Merb::BootLoader.after_app_loads do
 end
 
 Merb.add_mime_type :xls, nil, %w[application/vnd.ms-excel]
+Merb.add_mime_type :png, nil, %w[image/png]
 
+#require "gruff"

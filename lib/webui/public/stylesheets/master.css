@@ -124,6 +124,10 @@ div.clear-hack {
 		font-family: monospace;
 		padding: 20px;
 	}
+	
+	#content img {
+		border: 1px solid #ddd;
+	}
 
 
 

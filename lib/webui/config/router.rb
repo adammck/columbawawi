@@ -28,6 +28,11 @@
 Merb.logger.info("Compiling routes...")
 Merb::Router.prepare do
 
+	match("/graph/moderate-malnutrition.png").to(:controller => :global, :action => :mod_mal_graph)
+	match("/graph/severe-malnutrition.png"  ).to(:controller => :global, :action => :sev_mal_graph)
+	match("/graph/oedema.png"               ).to(:controller => :global, :action => :oedema_graph)
+	match("/graph/diarrhea.png"             ).to(:controller => :global, :action => :diarrhea_graph)
+
   # maintenance and backup stuff
   match("/dump").to(:controller => :maintenance, :action => :dump)
 	
@@ -46,19 +51,23 @@ Merb::Router.prepare do
   match("/:district/children"     ).to(:controller => :districts, :action => :children)
   match("/children"               ).to(:controller => :global,    :action => :children)
   
-  # provides an overview of what's hsening in each scope
+  # a list of gmcs in each scope
+  match("/:district/gmcs").to(:controller => :districts, :action => :gmcs)
+  match("/gmcs"          ).to(:controller => :global,    :action => :gmcs)
+  
+  # provides an overview/dashboard of what's happening in each scope
   match("/:district/:gmc/:child/").to(:controller => :children,  :action => :index)
   match("/:district/:gmc/"       ).to(:controller => :gmcs,      :action => :index)
   match("/:district/"            ).to(:controller => :districts, :action => :index)
   match("/"                      ).to(:controller => :global,    :action => :index)
   
-  # provides an overview of what's hsening in each scope
+  # export the reports from each scope
   match("/:district/:gmc/:child/:report.xls").to(:controller => :children,  :action => :excel)
   match("/:district/:gmc/:report.xls"       ).to(:controller => :gmcs,      :action => :excel)
   match("/:district/:report.xls"            ).to(:controller => :districts, :action => :excel)
   match("/:report.xls"                      ).to(:controller => :global,    :action => :excel)
 	 
   # returns a list of gmcs as json data for each scope
-  match("/:district/gmc.json").to(:controller => :districts, :action => :all_gmc)
-  match("/gmc.json"          ).to(:controller => :global, :action => :all_gmc)
+  #match("/:district/gmc.json").to(:controller => :districts, :action => :all_gmc)
+  #match("/gmc.json"          ).to(:controller => :global,    :action => :all_gmc)
 end
