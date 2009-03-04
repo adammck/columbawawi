@@ -31,4 +31,8 @@ class Child
 		((n.year - birthday.year) * 12) +\
 			(n.month - birthday.month)
 	end
+	
+	def title
+		"##{uid}"
+	end
 end

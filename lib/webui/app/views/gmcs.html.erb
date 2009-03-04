@@ -1,0 +1,19 @@
+<div class="module gmcs">
+	<table>
+		<caption>All GMCs</caption>
+		<thead>
+			<tr>
+				<th>District</th>
+				<th>Title</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% for gmc in @all_gmcs %>
+			<tr>
+				<td><%= gmc.district.title %></td>
+				<td><%= gmc.title %></td>
+			</tr>
+			<% end %>
+		</tbody>
+	</table>
+</div>

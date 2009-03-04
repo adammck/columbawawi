@@ -28,11 +28,6 @@
 Merb.logger.info("Compiling routes...")
 Merb::Router.prepare do
 
-	match("/graph/moderate-malnutrition.png").to(:controller => :global, :action => :mod_mal_graph)
-	match("/graph/severe-malnutrition.png"  ).to(:controller => :global, :action => :sev_mal_graph)
-	match("/graph/oedema.png"               ).to(:controller => :global, :action => :oedema_graph)
-	match("/graph/diarrhea.png"             ).to(:controller => :global, :action => :diarrhea_graph)
-
   # maintenance and backup stuff
   match("/dump").to(:controller => :maintenance, :action => :dump)
 	
@@ -46,6 +41,11 @@ Merb::Router.prepare do
   match("/:district/map"     ).to(:controller => :districts, :action => :map)
   match("/map"               ).to(:controller => :global, :action => :map)
   
+	# graphs for each scope
+	match("/:district/:gmc/graph/:filename.png").to(:controller => :global, :action => :graph)
+	match("/:district/graph/:filename.png").to(:controller => :global, :action => :graph)
+	match("/graph/:filename.png").to(:controller => :global, :action => :graph)
+	
   # a list of registered children in each scope
   match("/:district/:gmc/children").to(:controller => :gmcs,      :action => :children)
   match("/:district/children"     ).to(:controller => :districts, :action => :children)
